@@ -318,7 +318,7 @@ async function submitKnowledge() {
     ElMessage.success('已加入知识库')
     knowledgeVisible.value = false
   } catch (e) {
-    ElMessage.error(e?.response?.data?.message || '加入失败，请稍后重试')
+    ElMessage.warning(e?.response?.data?.message || '您已加入知识库')
   }
 }
 

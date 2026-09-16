@@ -54,7 +54,7 @@ function handleAuthFailure(message) {
   localStorage.removeItem('userInfo')
   if (router.currentRoute.value.path !== '/login') {
     if (kicked) {
-      ElMessage.warning('账号已在其他设备登录，您已被迫下线，请重新登录')
+      ElMessage.warning('账号已在其他设备登录，请重新登录')
     } else {
       ElMessage.warning(message || '登录已失效，请重新登录')
     }

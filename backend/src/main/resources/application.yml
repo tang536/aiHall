@@ -1,0 +1,140 @@
+server:
+  port: 8080
+  address: 0.0.0.0
+  # 优雅停机：收到终止信号后先停止接收新请求，等处理中的请求（含 WebSocket）结束再退出
+  shutdown: graceful
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: ai-student-hall
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  mvc:
+    async:
+      request-timeout: 300000
+  datasource:
+    # 敏感配置一律走环境变量注入，本地开发用冒号后的默认值；生产环境务必覆盖
+    url: ${DB_URL:JDBC:mysql://localhost:3306/ai_hall?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:12345}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  # Redis：仅当 app.session.store=redis 时真正使用；默认 memory 时不建立连接
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      connect-timeout: 3s
+      timeout: 3s
+      # password:
+      # 本项目只把 Redis 当键值缓存用，不需要 Spring Data 的 Repository 扫描
+      # （否则启动时会为每个 JPA 仓储打印一条 "Could not safely identify store assignment" 噪音日志）
+      repositories:
+        enabled: false
+
+# Ollama 大模型配置
+ollama:
+  base-url: http://localhost:11434
+  model: deepseek-r1:7b
+  timeout: 300
+  temperature: 0.3
+  top-p: 1
+  num-ctx: 8192
+  num-predict: 1024
+  keep-alive: 30m
+
+# 应用自定义配置
+app:
+  jwt:
+    # AES 密钥：用于加解密教务系统绑定凭证（历史字段沿用此键名，勿随意更换；轮换会导致已绑定凭证解不开）
+    secret: ${APP_JWT_SECRET:ai-student-hall-secret-key-2026-gxu-computer-college}
+    # JWT 签名密钥（HS256，长度需 ≥ 32 字节）。生产环境请通过环境变量覆盖
+    signing-key: ${APP_JWT_SIGNING_KEY:ai-student-hall-jwt-hs256-signing-key-2026-gxu-college}
+    issuer: ai-student-hall
+    expire-hours: 24
+    # 滑动续期：令牌剩余有效期少于该分钟数时，用同一 jti 换发新令牌并通过 X-New-Token 响应头下发
+    renew-before-minutes: ${APP_JWT_RENEW_BEFORE_MINUTES:120}
+  session:
+    # memory = 单进程内存（开箱即用）；redis = 共享存储，支持多实例与重启续期
+    store: ${APP_SESSION_STORE:memory}
+    key-prefix: "aihall:auth:"
+  security:
+    # 同一账号连续密码错误达到该次数后临时锁定
+    login-max-failures: 10
+    login-lock-minutes: 10
+    # 同一 IP 注册冷却时间（秒）
+    register-cooldown-seconds: 60
+  cors:
+    # allowedOriginPatterns 支持通配符；局域网其他机器通过 http://<本机IP>:5173/5174 访问时也能放行
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5173,http://localhost:5174,http://10.2.50.*:*,http://192.168.*:*,http://10.1.37.*:*}
+  chat:
+    # 多实例部署时转发私聊消息的 Redis 频道前缀（仅 app.session.store=redis 时生效）。
+    # 按用户分频道：aihall:chat:user:{userId}，只有持有该用户连接的实例会订阅
+    channel-prefix: ${APP_CHAT_CHANNEL_PREFIX:aihall:chat:user:}
+  upload:
+    # 上传时自动生成缩略图：列表页只加载缩略图，详情页才加载原图
+    thumbnail-max-edge: ${APP_THUMB_MAX_EDGE:640}
+    thumbnail-quality: ${APP_THUMB_QUALITY:0.8}
+  cache:
+    # 热点读缓存（帖子/商品列表、统计概览、校园路网）。TTL 短 + 写时失效，宁可偶尔多查一次库
+    enabled: ${APP_CACHE_ENABLED:true}
+    list-ttl-seconds: ${APP_CACHE_LIST_TTL:30}
+    reference-ttl-seconds: ${APP_CACHE_REF_TTL:300}
+    max-entries: ${APP_CACHE_MAX_ENTRIES:500}
+
+# 运维端点：只暴露健康检查，且不返回组件明细，避免对外泄露内部拓扑
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+  health:
+    redis:
+      # 只有真正把 Redis 当会话存储用时才需要探活。
+      # 默认 memory 模式下本机根本没有 Redis，探活必然失败并把整体状态拉成 DOWN（进而 503）。
+      # 切到 app.session.store=redis 时，请同时设置 APP_REDIS_HEALTH=true。
+      enabled: ${APP_REDIS_HEALTH:false}
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: AI学生事务智能办事大厅
+    version: 1.0.0
+
+logging:
+  level:
+    com.gxu.aihall: DEBUG
+    org.hibernate.SQL: WARN
+    # 这两项一旦开到 DEBUG 就会把 SQL 绑定参数原样打进日志（含手机号、口令哈希等），
+    # 显式钉在 WARN 上，避免有人为了排查问题临时调高后忘了改回来。
+    org.hibernate.orm.jdbc.bind: WARN
+    org.hibernate.orm.jdbc.extract: WARN
+  pattern:
+    # 在默认格式里插入 [traceId]，一个请求跨多条日志时可直接串联
+    # %clr() 不加颜色参数时按日志级别自动着色（INFO绿/WARN黄/ERROR红）；加了参数则固定该色
+    console: "%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([%X{traceId:-}]){blue} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"

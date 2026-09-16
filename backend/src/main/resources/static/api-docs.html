@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI学生事务智能办事大厅 · 接口文档</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --border: #e3e6ea; --text: #1f2329;
+    --muted: #6b7280; --accent: #1668dc; --get: #1677ff; --post: #16a34a;
+    --put: #d97706; --delete: #dc2626; --patch: #7c3aed;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         background: var(--bg); color: var(--text); }
+  header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 16px 24px;
+           position: sticky; top: 0; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 18px; }
+  .sub { color: var(--muted); font-size: 12px; }
+  .bar { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  input, button { font: inherit; padding: 7px 10px; border: 1px solid var(--border);
+                  border-radius: 6px; background: #fff; }
+  input { flex: 1 1 320px; min-width: 220px; }
+  button { cursor: pointer; background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.ghost { background: #fff; color: var(--text); }
+  main { padding: 16px 24px 48px; }
+  .group { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+           margin-bottom: 12px; overflow: hidden; }
+  .group > summary { padding: 11px 14px; cursor: pointer; font-weight: 600; list-style: none; }
+  .group > summary::-webkit-details-marker { display: none; }
+  .group > summary::before { content: "▸ "; color: var(--muted); }
+  .group[open] > summary::before { content: "▾ "; }
+  .op { border-top: 1px solid var(--border); padding: 10px 14px; }
+  .op .line { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .verb { font: 700 11px/1 ui-monospace, monospace; padding: 5px 7px; border-radius: 4px;
+          color: #fff; min-width: 58px; text-align: center; }
+  .GET { background: var(--get); } .POST { background: var(--post); }
+  .PUT { background: var(--put); } .DELETE { background: var(--delete); }
+  .PATCH { background: var(--patch); }
+  code { font-family: ui-monospace, Consolas, monospace; }
+  .path { font-weight: 600; }
+  .desc { color: var(--muted); font-size: 12px; }
+  .params { margin: 6px 0 0 68px; font-size: 12px; color: var(--muted); }
+  .params span { display: inline-block; margin-right: 10px; }
+  .tag { background: #eef2f7; border-radius: 4px; padding: 1px 6px; font-size: 11px; color: var(--muted); }
+  .err { color: var(--delete); padding: 12px 0; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI学生事务智能办事大厅 · 接口文档</h1>
+  <div class="sub">由运行时映射表自动生成（OpenAPI 3.0），不会与代码脱节。接口说明来自后端 @ApiDoc 注解，未标注的显示方法名。</div>
+  <div class="bar">
+    <input id="token" placeholder="粘贴管理员令牌（登录后台后在浏览器控制台执行 localStorage.getItem('token')）">
+    <button id="load">加载文档</button>
+    <button class="ghost" id="json">查看原始 JSON</button>
+  </div>
+  <div class="hint" id="hint"></div>
+</header>
+<main id="main"></main>
+<script>
+(function () {
+  var main = document.getElementById('main')
+  var hint = document.getElementById('hint')
+  var tokenInput = document.getElementById('token')
+  tokenInput.value = localStorage.getItem('token') || ''
+
+  function authHeader() {
+    var t = tokenInput.value.trim()
+    return t ? { Authorization: 'Bearer ' + t } : {}
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag)
+    if (cls) n.className = cls
+    if (text != null) n.textContent = text
+    return n
+  }
+
+  function render(doc) {
+    main.innerHTML = ''
+    var paths = doc.paths || {}
+    var byTag = {}
+    Object.keys(paths).forEach(function (p) {
+      Object.keys(paths[p]).forEach(function (verb) {
+        var op = paths[p][verb]
+        var tag = (op.tags && op.tags[0]) || '其他'
+        ;(byTag[tag] = byTag[tag] || []).push({ path: p, verb: verb.toUpperCase(), op: op })
+      })
+    })
+    var tagNames = Object.keys(byTag).sort()
+    document.getElementById('hint').textContent =
+      '共 ' + Object.keys(paths).length + ' 个路径 / ' + tagNames.reduce(function (a, t) { return a + byTag[t].length }, 0) +
+      ' 个接口，分组 ' + tagNames.length + ' 个'
+
+    tagNames.forEach(function (tag) {
+      var box = el('details', 'group')
+      box.open = tagNames.length <= 3
+      var sum = el('summary', null, tag + '（' + byTag[tag].length + '）')
+      box.appendChild(sum)
+      byTag[tag].sort(function (a, b) { return a.path.localeCompare(b.path) }).forEach(function (item) {
+        var row = el('div', 'op')
+        var line = el('div', 'line')
+        line.appendChild(el('span', 'verb ' + item.verb, item.verb))
+        line.appendChild(el('code', 'path', item.path))
+        line.appendChild(el('span', 'desc', item.op.summary || ''))
+        if (item.op.description) {
+          var d = el('span', 'tag', item.op.description)
+          line.appendChild(d)
+        }
+        row.appendChild(line)
+        if (item.op.parameters && item.op.parameters.length) {
+          var ps = el('div', 'params')
+          item.op.parameters.forEach(function (p) {
+            ps.appendChild(el('span', null,
+              p.name + ' · ' + p.in + (p.required ? ' · 必填' : '') +
+              ' · ' + ((p.schema && p.schema.type) || 'object')))
+          })
+          row.appendChild(ps)
+        }
+        if (item.op.requestBody) {
+          var body = el('div', 'params', '请求体: application/json' +
+            (item.op.requestBody.required ? ' · 必填' : ''))
+          row.appendChild(body)
+        }
+        box.appendChild(row)
+      })
+      main.appendChild(box)
+    })
+  }
+
+  function load() {
+    main.innerHTML = ''
+    hint.textContent = '加载中…'
+    fetch('/api-docs', { headers: authHeader() })
+      .then(function (r) { return r.json() })
+      .then(function (res) {
+        if (res.code && res.code !== 200) {
+          main.appendChild(el('div', 'err', '加载失败：' + (res.message || res.code)))
+          hint.textContent = ''
+          return
+        }
+        render(res)
+      })
+      .catch(function (e) {
+        main.appendChild(el('div', 'err', '加载失败：' + e.message))
+        hint.textContent = ''
+      })
+  }
+
+  document.getElementById('load').addEventListener('click', load)
+  document.getElementById('json').addEventListener('click', function () {
+    fetch('/api-docs', { headers: authHeader() })
+      .then(function (r) { return r.text() })
+      .then(function (t) {
+        main.innerHTML = ''
+        var pre = el('pre')
+        pre.style.cssText = 'background:#fff;border:1px solid #e3e6ea;border-radius:8px;padding:14px;overflow:auto'
+        try { pre.textContent = JSON.stringify(JSON.parse(t), null, 2) } catch (e) { pre.textContent = t }
+        main.appendChild(pre)
+      })
+  })
+  if (tokenInput.value) load()
+})()
+</script>
+</body>
+</html>

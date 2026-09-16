@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "development"
+  ],
+  "browserslist": [
+    "defaults",
+    "not ie 11",
+    "not firefox <= 150",
+    "not safari <= 26.4"
+  ],
+  "hints": {
+    "css-prefix-order": "off"
+  }
+}

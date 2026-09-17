@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import AdminLayout from '@/components/AdminLayout.vue'
 import { getDashboard } from '@/api'
 import * as echarts from 'echarts'
@@ -95,6 +95,11 @@ const loading = ref(true)
 const loadError = ref(false)
 
 const statCards = ref([])
+const chartInstances = []
+
+function resizeCharts() {
+  chartInstances.forEach((c) => c && c.resize())
+}
 
 function initStatCards() {
   const r = stats.value.repair || {}
@@ -134,6 +139,7 @@ function initCharts() {
   // 报修状态饼图
   if (repairChartRef.value) {
     const chart = echarts.init(repairChartRef.value)
+    chartInstances.push(chart)
     const r = stats.value.repair || {}
     chart.setOption({
       tooltip: { trigger: 'item' },
@@ -157,6 +163,7 @@ function initCharts() {
   // 事项类型饼图
   if (appChartRef.value) {
     const chart = echarts.init(appChartRef.value)
+    chartInstances.push(chart)
     const a = stats.value.appTypeDistribution || {}
     chart.setOption({
       tooltip: { trigger: 'item' },
@@ -178,6 +185,7 @@ function initCharts() {
   // 学生反馈处理情况（饼图）
   if (feedbackChartRef.value) {
     const chart = echarts.init(feedbackChartRef.value)
+    chartInstances.push(chart)
     const f = stats.value.feedback || {}
     chart.setOption({
       tooltip: { trigger: 'item' },
@@ -199,6 +207,7 @@ function initCharts() {
   // 二手商品状态分布（饼图）
   if (marketChartRef.value) {
     const chart = echarts.init(marketChartRef.value)
+    chartInstances.push(chart)
     const m = stats.value.market || {}
     chart.setOption({
       tooltip: { trigger: 'item' },
@@ -220,6 +229,7 @@ function initCharts() {
   // 趋势图（使用后端真实统计数据）
   if (trendChartRef.value) {
     const chart = echarts.init(trendChartRef.value)
+    chartInstances.push(chart)
     const trend = stats.value.trend || {}
     const days = trend.days || []
     chart.setOption({
@@ -246,13 +256,24 @@ onMounted(async () => {
     hotQuestions.value = res.data.hotQuestions || []
     initStatCards()
     await nextTick()
-    initCharts()
+    // 延迟初始化，等 AdminLayout 布局/侧边栏动画稳定后再画，避免容器宽度为 0
+    setTimeout(() => {
+      initCharts()
+      resizeCharts()
+    }, 200)
+    window.addEventListener('resize', resizeCharts)
   } catch (e) {
     console.error(e)
     loadError.value = true
   } finally {
     loading.value = false
   }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeCharts)
+  chartInstances.forEach((c) => c && c.dispose())
+  chartInstances.length = 0
 })
 </script>
 

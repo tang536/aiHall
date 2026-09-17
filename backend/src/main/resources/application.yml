@@ -55,7 +55,7 @@ spring:
 # Ollama 大模型配置
 ollama:
   base-url: http://localhost:11434
-  model: deepseek-r1:7b
+  model: qwen2.5:3b
   timeout: 300
   temperature: 0.3
   top-p: 1

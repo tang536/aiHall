@@ -8,11 +8,13 @@ import com.gxu.aihall.dto.PostVO;
 import com.gxu.aihall.dto.PublicUserVO;
 import com.gxu.aihall.entity.Post;
 import com.gxu.aihall.entity.PostFavorite;
+import com.gxu.aihall.entity.PostLike;
 import com.gxu.aihall.entity.PostReply;
 import com.gxu.aihall.entity.User;
 import com.gxu.aihall.repository.PostReplyRepository;
 import com.gxu.aihall.cache.CacheConfig;
 import com.gxu.aihall.repository.PostFavoriteRepository;
+import com.gxu.aihall.repository.PostLikeRepository;
 import com.gxu.aihall.repository.PostRepository;
 import com.gxu.aihall.repository.UserRepository;
 import com.gxu.aihall.search.KeywordSearchSupport;
@@ -41,17 +43,20 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostReplyRepository postReplyRepository;
     private final PostFavoriteRepository postFavoriteRepository;
+    private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
     private final KeywordSearchSupport keywordSearch;
 
     public PostService(PostRepository postRepository,
                        PostReplyRepository postReplyRepository,
                        PostFavoriteRepository postFavoriteRepository,
+                       PostLikeRepository postLikeRepository,
                        UserRepository userRepository,
                        KeywordSearchSupport keywordSearch) {
         this.postRepository = postRepository;
         this.postReplyRepository = postReplyRepository;
         this.postFavoriteRepository = postFavoriteRepository;
+        this.postLikeRepository = postLikeRepository;
         this.userRepository = userRepository;
         this.keywordSearch = keywordSearch;
     }
@@ -71,11 +76,14 @@ public class PostService {
     }
 
     /** 详情：含全部回复（两级平铺，回复的回复带 replyToName） */
-    public PostVO getDetail(Long id) {
+    public PostVO getDetail(Long id, Long currentUserId) {
         Post post = postRepository.findById(id).orElse(null);
         if (post == null || "DELETED".equals(post.getStatus())) return null;
 
         PostVO vo = PostVO.from(post, authorVO(post.getUserId(), new HashMap<>()));
+        if (currentUserId != null) {
+            vo.setLiked(postLikeRepository.existsByUserIdAndPostId(currentUserId, id));
+        }
         Map<Long, User> cache = new HashMap<>();
         List<PostReply> replies = postReplyRepository.findByPostIdAndStatusOrderByCreateTimeAsc(id, "PUBLISHED");
 
@@ -306,12 +314,33 @@ public class PostService {
         });
     }
 
-    public Post like(Long postId) {
+    /**
+     * 点赞/取消点赞（toggle）：同一用户对同一帖子只能点赞一次，再次点击取消。
+     * @return Map 包含 liked（是否已点赞）和 likeCount（最新点赞数）
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public Map<String, Object> toggleLike(Long userId, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BizException("帖子不存在"));
-        post.setLikeCount((post.getLikeCount() == null ? 0 : post.getLikeCount()) + 1);
+        boolean liked;
+        if (postLikeRepository.existsByUserIdAndPostId(userId, postId)) {
+            postLikeRepository.deleteByUserIdAndPostId(userId, postId);
+            post.setLikeCount(Math.max(0, (post.getLikeCount() == null ? 0 : post.getLikeCount()) - 1));
+            liked = false;
+        } else {
+            PostLike pl = new PostLike();
+            pl.setUserId(userId);
+            pl.setPostId(postId);
+            pl.setCreateTime(LocalDateTime.now());
+            postLikeRepository.save(pl);
+            post.setLikeCount((post.getLikeCount() == null ? 0 : post.getLikeCount()) + 1);
+            liked = true;
+        }
         postRepository.save(post);
-        return post;
+        Map<String, Object> result = new HashMap<>();
+        result.put("liked", liked);
+        result.put("likeCount", post.getLikeCount());
+        return result;
     }
 
     // ==================== 内部工具 ====================

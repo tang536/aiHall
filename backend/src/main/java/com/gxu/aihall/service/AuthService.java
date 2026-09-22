@@ -396,6 +396,7 @@ public class AuthService {
         if (profile.getGrade() != null) user.setGrade(profile.getGrade().trim());
         if (profile.getPhone() != null) user.setPhone(profile.getPhone().trim());
         if (profile.getEmail() != null) user.setEmail(profile.getEmail().trim());
+        if (profile.getAvatar() != null) user.setAvatar(profile.getAvatar().trim());
         user.setUpdateTime(LocalDateTime.now());
         return userRepository.save(user);
     }

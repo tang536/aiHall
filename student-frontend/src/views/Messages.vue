@@ -28,7 +28,7 @@
             @click="openConversation(conv.peer)"
           >
             <el-badge :value="conv.unread" :hidden="!conv.unread" class="conv-badge">
-              <el-avatar :size="40" class="avatar">{{ (conv.peer?.displayName || '?').charAt(0) }}</el-avatar>
+              <el-avatar :size="40" class="avatar" :src="conv.peer?.avatar ? resolveAvatarUrl(conv.peer.avatar) : ''">{{ (conv.peer?.displayName || '?').charAt(0) }}</el-avatar>
             </el-badge>
             <div class="conv-info">
               <div class="conv-top">
@@ -54,8 +54,8 @@
       <section class="chat-panel">
         <template v-if="peer">
           <div class="chat-head">
-            <el-avatar :size="34" class="avatar">{{ (peer.displayName || '?').charAt(0) }}</el-avatar>
-            <div class="chat-head-info">
+            <el-avatar :size="34" class="avatar clickable" :src="peer.avatar ? resolveAvatarUrl(peer.avatar) : ''" @click="goPeerProfile">{{ (peer.displayName || '?').charAt(0) }}</el-avatar>
+            <div class="chat-head-info clickable" @click="goPeerProfile">
               <span class="chat-name">{{ peer.displayName }}</span>
               <span class="chat-meta">
                 <span v-if="peer.college">{{ peer.college }}</span>
@@ -64,6 +64,9 @@
             </div>
             <el-button v-if="!peer.friend" size="small" plain @click="addFriend(peer)">
               <el-icon><Plus /></el-icon> 加好友
+            </el-button>
+            <el-button v-else size="small" type="danger" plain @click="removeFriend(peer)">
+              <el-icon><Delete /></el-icon> 删好友
             </el-button>
             <el-button size="small" text @click="closeChat">关闭</el-button>
           </div>
@@ -86,15 +89,16 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import ChatWindow from '@/components/ChatWindow.vue'
 import { useUserStore } from '@/store/user'
 import { useChatStore } from '@/store/chat'
 import { onMessage as onSocketMessage } from '@/composables/useChatSocket'
 import {
-  listConversations, chatHistory, sendMessage, markConversationRead, getUserProfile, sendFriendRequest
+  listConversations, chatHistory, sendMessage, markConversationRead, getUserProfile, sendFriendRequest, deleteFriend
 } from '@/api'
 import { relativeTime } from '@/utils/community'
+import { resolveAvatarUrl } from '@/utils/community'
 
 const route = useRoute()
 const router = useRouter()
@@ -173,6 +177,28 @@ async function addFriend(user) {
     peer.value.friend = true
   } catch {
     /* 拦截器已提示 */
+  }
+}
+
+async function removeFriend(user) {
+  try {
+    await ElMessageBox.confirm(`确定删除好友「${user.displayName}」吗？`, '提示', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
+    await deleteFriend(user.userId)
+    ElMessage.success('已删除好友')
+    peer.value.friend = false
+    await loadConversations()
+  } catch {
+    /* 拦截器已提示 */
+  }
+}
+
+function goPeerProfile() {
+  if (peer.value?.userId) {
+    router.push(`/user/${peer.value.userId}`)
   }
 }
 
@@ -302,6 +328,16 @@ onBeforeUnmount(() => {
   color: #fff;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+.avatar.clickable,
+.chat-head-info.clickable {
+  cursor: pointer;
+}
+
+.avatar.clickable:hover,
+.chat-head-info.clickable:hover {
+  opacity: 0.8;
 }
 
 .conv-badge {

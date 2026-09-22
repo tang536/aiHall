@@ -39,7 +39,7 @@
         <div v-loading="loading" class="post-list">
           <div v-for="post in list" :key="post.id" class="post-card card-hover" @click="goDetail(post.id)">
             <div class="post-head">
-              <el-avatar :size="38" class="avatar clickable" @click.stop="goUserProfile(post.author)">{{ (post.author?.displayName || '?').charAt(0) }}</el-avatar>
+              <el-avatar :size="38" class="avatar clickable" :src="post.author?.avatar ? resolveAvatarUrl(post.author.avatar) : ''" @click.stop="goUserProfile(post.author)">{{ (post.author?.displayName || '?').charAt(0) }}</el-avatar>
               <div class="head-info">
                 <div class="author-line">
                   <span class="author clickable" @click.stop="goUserProfile(post.author)">{{ post.author?.displayName }}</span>
@@ -109,7 +109,7 @@
         <div v-loading="favoriteLoading" class="post-list">
           <div v-for="post in favoriteList" :key="post.id" class="post-card card-hover" @click="goDetail(post.id)">
             <div class="post-head">
-              <el-avatar :size="38" class="avatar clickable" @click.stop="goUserProfile(post.author)">{{ (post.author?.displayName || '?').charAt(0) }}</el-avatar>
+              <el-avatar :size="38" class="avatar clickable" :src="post.author?.avatar ? resolveAvatarUrl(post.author.avatar) : ''" @click.stop="goUserProfile(post.author)">{{ (post.author?.displayName || '?').charAt(0) }}</el-avatar>
               <div class="head-info">
                 <div class="author-line">
                   <span class="author clickable" @click.stop="goUserProfile(post.author)">{{ post.author?.displayName }}</span>
@@ -181,7 +181,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ImageUpload from '@/components/ImageUpload.vue'
 import { listPosts, createPost, deletePost, myPosts, myPostFavorites, getPostCategories } from '@/api'
-import { POST_CATEGORIES, POST_CATEGORY_LABEL, splitImages, relativeTime } from '@/utils/community'
+import { POST_CATEGORIES, POST_CATEGORY_LABEL, splitImages, relativeTime, resolveAvatarUrl } from '@/utils/community'
 
 const router = useRouter()
 

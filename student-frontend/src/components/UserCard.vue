@@ -1,6 +1,6 @@
 <template>
   <div class="user-card" :class="{ compact }">
-    <el-avatar :size="compact ? 36 : 48" class="avatar clickable" @click="goProfile">
+    <el-avatar :size="compact ? 36 : 48" class="avatar clickable" :src="user?.avatar ? resolveAvatarUrl(user.avatar) : ''" @click="goProfile">
       {{ (user?.displayName || '?').charAt(0) }}
     </el-avatar>
     <div class="info">
@@ -24,6 +24,9 @@
         <el-button v-if="showAdd && !user?.friend && !isSelf" size="small" plain @click="$emit('add', user)">
           <el-icon><Plus /></el-icon> 加好友
         </el-button>
+        <el-button v-if="showAdd && user?.friend && !isSelf" size="small" type="danger" plain @click="$emit('remove', user)">
+          <el-icon><Delete /></el-icon> 删好友
+        </el-button>
       </slot>
     </div>
   </div>
@@ -33,10 +36,11 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
+import { resolveAvatarUrl } from '@/utils/community'
 
 /**
- * 统一的用户展示卡片：全部字段来自后端脱敏后的 PublicUserVO，
- * 不含手机号、邮箱等隐私信息。
+ * 统一的用户展示卡片：全部字段来自后端 PublicUserVO，
+ * 不含手机号、邮箱等隐私信息；学号按业务要求公开展示。
  */
 const props = defineProps({
   user: { type: Object, default: () => ({}) },
@@ -44,7 +48,7 @@ const props = defineProps({
   showChat: { type: Boolean, default: false },
   showAdd: { type: Boolean, default: false }
 })
-defineEmits(['chat', 'add'])
+defineEmits(['chat', 'add', 'remove'])
 
 const router = useRouter()
 const userStore = useUserStore()

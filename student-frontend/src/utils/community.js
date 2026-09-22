@@ -123,3 +123,11 @@ export function formatMoney(v) {
   const n = Number(v ?? 0)
   return `¥${n.toFixed(2)}`
 }
+
+/** 解析头像 URL：后端返回 /uploads/xxx 相对路径，需拼上后端地址 */
+export function resolveAvatarUrl(url) {
+  if (!url) return ''
+  if (url.startsWith('http') || url.startsWith('data:')) return url
+  const base = import.meta.env.VITE_API_BASE_URL || ''
+  return base + url
+}

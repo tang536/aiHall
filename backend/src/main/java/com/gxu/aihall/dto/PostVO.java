@@ -22,6 +22,8 @@ public class PostVO {
     private String thumbUrl;
     private Integer replyCount;
     private Integer likeCount;
+    /** 当前登录用户是否已点赞（未登录时为 false） */
+    private Boolean liked = false;
     private LocalDateTime createTime;
 
     /** 作者公开信息（已脱敏） */

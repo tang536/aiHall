@@ -13,6 +13,22 @@
         <div class="card-title">
           <el-icon><InfoFilled /></el-icon> 基本信息
         </div>
+        <!-- 头像上传 -->
+        <div class="avatar-section">
+          <div class="avatar-wrapper" @click="triggerAvatarUpload">
+            <el-avatar v-if="profileForm.avatar" :size="80" :src="resolveAvatarUrl(profileForm.avatar)" class="avatar-img" />
+            <el-avatar v-else :size="80" class="avatar-placeholder">{{ (profileForm.realName || profileForm.username || '?').charAt(0) }}</el-avatar>
+            <div class="avatar-mask">
+              <el-icon><Camera /></el-icon>
+              <span>更换头像</span>
+            </div>
+          </div>
+          <input ref="avatarInputRef" type="file" accept="image/*" style="display:none" @change="handleAvatarFile" />
+          <div class="avatar-tip">
+            <p>点击头像可上传自定义头像</p>
+            <p>支持 JPG / PNG / GIF，建议尺寸 200×200 以上</p>
+          </div>
+        </div>
         <el-form ref="profileFormRef" :model="profileForm" :rules="profileRules" label-width="90px" class="profile-form">
           <el-row :gutter="24">
             <el-col :xs="24" :sm="12">
@@ -223,12 +239,12 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   getUserInfo, updateProfile, updatePassword, logout as apiLogout,
-  bindJwxt, getBindStatus, getWallet, recharge, getTransactions
+  bindJwxt, getBindStatus, getWallet, recharge, getTransactions, uploadImage
 } from '@/api'
 import { useUserStore } from '@/store/user'
 import { useFocusMode } from '@/composables/useFocusMode'
 import { formatMoney } from '@/utils/community'
-import { User, InfoFilled, Lock, Check, Key, Link, Notebook, Timer, SwitchButton, Wallet, Plus, Tickets } from '@element-plus/icons-vue'
+import { User, InfoFilled, Lock, Check, Key, Link, Notebook, Timer, SwitchButton, Wallet, Plus, Tickets, Camera } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -304,6 +320,8 @@ function formatDateTime(v) {
 
 const profileFormRef = ref()
 const pwdFormRef = ref()
+const avatarInputRef = ref()
+const avatarUploading = ref(false)
 
 const profileForm = ref({
   username: '',
@@ -312,7 +330,8 @@ const profileForm = ref({
   major: '',
   grade: '',
   phone: '',
-  email: ''
+  email: '',
+  avatar: ''
 })
 
 const profileRules = {
@@ -396,7 +415,8 @@ async function loadProfile() {
       major: u.major || '',
       grade: u.grade || '',
       phone: u.phone || '',
-      email: u.email || ''
+      email: u.email || '',
+      avatar: u.avatar || ''
     }
   } catch {
     // 登录态失效等错误已由请求层统一提示
@@ -416,12 +436,14 @@ async function saveProfile() {
         major: profileForm.value.major,
         grade: profileForm.value.grade,
         phone: profileForm.value.phone,
-        email: profileForm.value.email
+        email: profileForm.value.email,
+        avatar: profileForm.value.avatar
       })
       // 同步更新本地登录信息中的显示名和学院
       if (userStore.userInfo) {
         userStore.userInfo.realName = res.data?.realName || profileForm.value.realName
         userStore.userInfo.college = res.data?.college || profileForm.value.college
+        userStore.userInfo.avatar = res.data?.avatar || profileForm.value.avatar
         localStorage.setItem('userInfo', JSON.stringify(userStore.userInfo))
       }
       ElMessage.success(res.message || '资料已更新')
@@ -431,6 +453,52 @@ async function saveProfile() {
       saving.value = false
     }
   })
+}
+
+// ========== 头像上传 ==========
+function triggerAvatarUpload() {
+  if (avatarUploading.value) return
+  avatarInputRef.value?.click()
+}
+
+function resolveAvatarUrl(url) {
+  if (!url) return ''
+  if (url.startsWith('http') || url.startsWith('data:')) return url
+  // 后端返回的是 /uploads/xxx 相对路径，需要拼上后端地址
+  return import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}${url}` : url
+}
+
+async function handleAvatarFile(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    ElMessage.warning('请选择图片文件')
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.warning('图片大小不能超过 5MB')
+    return
+  }
+  avatarUploading.value = true
+  try {
+    const res = await uploadImage(file)
+    const url = res?.data?.url
+    if (url) {
+      profileForm.value.avatar = url
+      // 立即保存头像
+      await updateProfile({ avatar: url })
+      if (userStore.userInfo) {
+        userStore.userInfo.avatar = url
+        localStorage.setItem('userInfo', JSON.stringify(userStore.userInfo))
+      }
+      ElMessage.success('头像已更新')
+    }
+  } catch {
+    /* 拦截器已提示 */
+  } finally {
+    avatarUploading.value = false
+    e.target.value = ''
+  }
 }
 
 async function changePassword() {
@@ -521,6 +589,77 @@ onMounted(() => {
 
 .profile-form :deep(.el-form-item) {
   margin-bottom: 20px;
+}
+
+/* ========== 头像上传 ========== */
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #fafbfc;
+  border-radius: 10px;
+  border: 1px solid #ebeef5;
+}
+
+.avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-wrapper:hover .avatar-mask {
+  opacity: 1;
+}
+
+.avatar-img {
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-placeholder {
+  background: linear-gradient(135deg, #409eff, #67c23a);
+  color: #fff;
+  font-weight: 700;
+  font-size: 28px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.avatar-mask .el-icon {
+  font-size: 20px;
+}
+
+.avatar-tip {
+  flex: 1;
+}
+
+.avatar-tip p {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  color: #606266;
+}
+
+.avatar-tip p:last-child {
+  color: #909399;
+  font-size: 12px;
 }
 
 .form-actions {

@@ -36,13 +36,16 @@ public class PrivateMessageService {
     private final PrivateMessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChatBroadcaster broadcaster;
+    private final FriendService friendService;
 
     public PrivateMessageService(PrivateMessageRepository messageRepository,
                                  UserRepository userRepository,
-                                 ChatBroadcaster broadcaster) {
+                                 ChatBroadcaster broadcaster,
+                                 FriendService friendService) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.broadcaster = broadcaster;
+        this.friendService = friendService;
     }
 
     public static final int DEFAULT_PAGE_SIZE = 50;
@@ -65,8 +68,8 @@ public class PrivateMessageService {
         for (PrivateMessage m : latestList) {
             Long peerId = m.getSenderId().equals(userId) ? m.getReceiverId() : m.getSenderId();
             ConversationVO vo = new ConversationVO();
-            vo.setPeer(UserPrivacyUtil.toPublicVO(
-                    peerCache.computeIfAbsent(peerId, id -> userRepository.findById(id).orElse(null))));
+            User peerUser = peerCache.computeIfAbsent(peerId, id -> userRepository.findById(id).orElse(null));
+            vo.setPeer(UserPrivacyUtil.toPublicVO(peerUser, friendService.isFriend(userId, peerId)));
             vo.setLastMessage(previewOf(m));
             vo.setLastMsgType(m.getMsgType());
             vo.setLastTime(m.getCreateTime());

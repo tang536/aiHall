@@ -8,15 +8,16 @@ import java.math.BigDecimal;
 /**
  * 用户隐私脱敏工具。
  * 平台对外展示他人信息时，一律通过 {@link #toPublicVO(User, boolean)} 转换：
- * 只暴露展示名、头像、学院/专业/年级与脱敏账号，
- * 手机号、邮箱、完整学号、密码绝不外泄。
+ * 只暴露展示名、头像、学院/专业/年级与完整学号，
+ * 手机号、邮箱、密码绝不外泄。
+ * 注：学号（username）按业务要求作为公开信息展示，不再脱敏。
  */
 public final class UserPrivacyUtil {
 
     private UserPrivacyUtil() {
     }
 
-    /** 账号脱敏：保留前 4 位与后 2 位，中间以 4 个星号代替 */
+    /** 账号脱敏：保留前 4 位与后 2 位，中间以 4 个星号代替（保留方法供其他场景使用） */
     public static String maskAccount(String username) {
         if (username == null || username.isEmpty()) return "";
         int len = username.length();
@@ -66,12 +67,13 @@ public final class UserPrivacyUtil {
         vo.setUserId(user.getId());
         String realName = user.getRealName();
         vo.setDisplayName(realName == null || realName.trim().isEmpty()
-                ? maskAccount(user.getUsername()) : realName.trim());
+                ? user.getUsername() : realName.trim());
         vo.setAvatar(user.getAvatar());
         vo.setCollege(user.getCollege());
         vo.setMajor(user.getMajor());
         vo.setGrade(user.getGrade());
-        vo.setMaskedAccount(maskAccount(user.getUsername()));
+        // 学号按业务要求公开展示，不再脱敏
+        vo.setMaskedAccount(user.getUsername());
         vo.setFriend(isFriend);
         return vo;
     }

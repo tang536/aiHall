@@ -12,7 +12,7 @@
         <!-- 帖子正文 -->
         <div class="post-body">
           <div class="author-row">
-            <el-avatar :size="44" class="avatar clickable" @click="goUserProfile(post.author)">{{ (post.author?.displayName || '?').charAt(0) }}</el-avatar>
+            <el-avatar :size="44" class="avatar clickable" :src="post.author?.avatar ? resolveAvatarUrl(post.author.avatar) : ''" @click="goUserProfile(post.author)">{{ (post.author?.displayName || '?').charAt(0) }}</el-avatar>
             <div class="author-info">
               <div class="name-line">
                 <span class="name clickable" @click="goUserProfile(post.author)">{{ post.author?.displayName }}</span>
@@ -33,6 +33,9 @@
               <el-button v-if="!isAuthor && !post.author?.friend" size="small" plain @click="addFriend(post.author)">
                 <el-icon><Plus /></el-icon> 加好友
               </el-button>
+              <el-button v-if="!isAuthor && post.author?.friend" size="small" type="danger" plain @click="removeFriend(post.author)">
+                <el-icon><Delete /></el-icon> 删好友
+              </el-button>
             </div>
           </div>
 
@@ -52,8 +55,8 @@
           </div>
 
           <div class="post-actions">
-            <el-button text type="primary" :disabled="!userStore.isLoggedIn" @click="doLike">
-              <el-icon><Pointer /></el-icon> 点赞 {{ post.likeCount || 0 }}
+            <el-button text :type="post.liked ? 'danger' : 'primary'" :disabled="!userStore.isLoggedIn" @click="doLike">
+              <el-icon><Pointer /></el-icon> {{ post.liked ? '已点赞' : '点赞' }} {{ post.likeCount || 0 }}
             </el-button>
             <el-button
               text
@@ -102,7 +105,7 @@
               class="reply-item"
               :class="{ nested: !!reply.parentId }"
             >
-              <el-avatar :size="32" class="reply-avatar clickable" @click="goUserProfile(reply.author)">{{ (reply.author?.displayName || '?').charAt(0) }}</el-avatar>
+              <el-avatar :size="32" class="reply-avatar clickable" :src="reply.author?.avatar ? resolveAvatarUrl(reply.author.avatar) : ''" @click="goUserProfile(reply.author)">{{ (reply.author?.displayName || '?').charAt(0) }}</el-avatar>
               <div class="reply-body">
                 <div class="reply-head">
                   <span class="reply-author clickable" @click="goUserProfile(reply.author)">{{ reply.author?.displayName }}</span>
@@ -144,8 +147,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/user'
-import { getPost, replyPost, deleteReply, likePost, deletePost, sendFriendRequest, togglePostFavorite, checkPostFavorite } from '@/api'
-import { POST_CATEGORY_LABEL, splitImages, relativeTime } from '@/utils/community'
+import { getPost, replyPost, deleteReply, likePost, deletePost, sendFriendRequest, deleteFriend, togglePostFavorite, checkPostFavorite } from '@/api'
+import { POST_CATEGORY_LABEL, splitImages, relativeTime, resolveAvatarUrl } from '@/utils/community'
 
 const route = useRoute()
 const router = useRouter()
@@ -230,8 +233,17 @@ async function doDeleteReply(reply) {
 }
 
 async function doLike() {
-  const res = await likePost(post.value.id)
-  post.value.likeCount = res?.data?.likeCount ?? (post.value.likeCount || 0) + 1
+  if (!userStore.isLoggedIn) {
+    router.push('/login')
+    return
+  }
+  try {
+    const res = await likePost(post.value.id)
+    post.value.liked = !!res?.data?.liked
+    post.value.likeCount = res?.data?.likeCount ?? post.value.likeCount
+  } catch {
+    /* 拦截器已提示 */
+  }
 }
 
 async function doFavorite() {
@@ -289,6 +301,19 @@ async function addFriend(user) {
   } catch {
     /* 提示由拦截器处理 */
   }
+}
+
+async function removeFriend(user) {
+  try {
+    await ElMessageBox.confirm('确定删除该好友吗？', '删除好友', {
+      confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning'
+    })
+  } catch {
+    return
+  }
+  await deleteFriend(user.userId)
+  ElMessage.success('已删除好友')
+  user.friend = false
 }
 
 onMounted(() => {

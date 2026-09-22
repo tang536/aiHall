@@ -4,7 +4,7 @@
       <template v-if="user">
         <!-- 头部信息 -->
         <div class="profile-header">
-          <el-avatar :size="80" class="profile-avatar">
+          <el-avatar :size="80" class="profile-avatar" :src="user.avatar ? resolveAvatarUrl(user.avatar) : ''">
             {{ (user.displayName || '?').charAt(0) }}
           </el-avatar>
           <div class="profile-info">
@@ -44,19 +44,11 @@
             >
               <el-icon><Plus /></el-icon> 加好友
             </el-button>
-            <el-button v-else type="success" plain disabled>
-              <el-icon><Check /></el-icon> 已是好友
+            <el-button v-else type="danger" plain :loading="removing" @click="doRemoveFriend">
+              <el-icon><Delete /></el-icon> 删好友
             </el-button>
           </template>
         </div>
-
-        <el-alert
-          type="info"
-          :closable="false"
-          class="privacy-tip"
-          title="为保护同学隐私，仅展示脱敏后的学号；手机号与邮箱不会公开。"
-          show-icon
-        />
       </template>
 
       <el-empty v-else-if="!loading" description="用户不存在或已注销" :image-size="80" />
@@ -67,10 +59,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { School, User, Edit, ChatDotRound, Plus, Check } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { School, User, Edit, ChatDotRound, Plus, Delete } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
-import { getUserProfile, sendFriendRequest } from '@/api'
+import { getUserProfile, sendFriendRequest, deleteFriend } from '@/api'
+import { resolveAvatarUrl } from '@/utils/community'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,6 +71,7 @@ const userStore = useUserStore()
 
 const loading = ref(true)
 const adding = ref(false)
+const removing = ref(false)
 const user = ref(null)
 
 const isSelf = computed(() =>
@@ -118,6 +112,26 @@ async function doAddFriend() {
     /* 拦截器已提示 */
   } finally {
     adding.value = false
+  }
+}
+
+async function doRemoveFriend() {
+  try {
+    await ElMessageBox.confirm('确定删除该好友吗？删除后需要重新申请才能恢复。', '删除好友', {
+      confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning'
+    })
+  } catch {
+    return
+  }
+  removing.value = true
+  try {
+    await deleteFriend(user.value.userId)
+    ElMessage.success('已删除好友')
+    user.value.friend = false
+  } catch {
+    /* 拦截器已提示 */
+  } finally {
+    removing.value = false
   }
 }
 

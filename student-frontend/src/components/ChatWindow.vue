@@ -8,7 +8,13 @@
         class="msg-row"
         :class="{ mine: isMine(msg) }"
       >
-        <el-avatar :size="34" class="avatar">{{ avatarText(msg) }}</el-avatar>
+        <el-avatar
+          :size="34"
+          class="avatar"
+          :class="{ clickable: !isMine(msg) }"
+          :src="!isMine(msg) && props.peer?.avatar ? resolveAvatarUrl(props.peer.avatar) : ''"
+          @click="!isMine(msg) && goPeerProfile()"
+        >{{ avatarText(msg) }}</el-avatar>
         <div class="bubble-wrap">
           <div class="bubble" :class="{ mine: isMine(msg), share: isShare(msg) }">
             <!-- 分享卡片：商品 / 帖子 -->
@@ -70,6 +76,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { uploadImage } from '@/api'
 import { formatTime } from '@/utils/format'
+import { resolveAvatarUrl } from '@/utils/community'
 
 const props = defineProps({
   /** 已按时间正序的消息列表 */
@@ -103,6 +110,12 @@ function avatarText(msg) {
 function openShare(msg) {
   if (msg.msgType === 'ITEM' && msg.refId) router.push(`/market/${msg.refId}`)
   if (msg.msgType === 'POST' && msg.refId) router.push(`/posts/${msg.refId}`)
+}
+
+function goPeerProfile() {
+  if (props.peer?.userId) {
+    router.push(`/user/${props.peer.userId}`)
+  }
 }
 
 function scrollToBottom() {
@@ -173,6 +186,15 @@ async function uploadAndSend(option) {
   color: #fffdf9;
   font-weight: 700;
   font-family: 'Noto Serif SC', 'SimSun', serif;
+}
+
+.avatar.clickable {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.avatar.clickable:hover {
+  opacity: 0.8;
 }
 
 .bubble-wrap {

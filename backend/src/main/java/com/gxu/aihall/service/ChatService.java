@@ -3,7 +3,7 @@ package com.gxu.aihall.service;
 import com.gxu.aihall.dto.ChatRequest;
 import com.gxu.aihall.dto.ChatResponse;
 import com.gxu.aihall.entity.ChatMessage;
-import com.gxu.aihall.entity.KnowledgeDoc;
+import com.gxu.aihall.entity.KnowledgeChunk;
 import com.gxu.aihall.repository.ChatMessageRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,10 +41,10 @@ public class ChatService {
             sessionId = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         }
 
-        // 1. 检索知识库
-        List<KnowledgeDoc> relevantDocs = knowledgeBaseService.retrieve(request.getMessage(), 5);
-        String context = knowledgeBaseService.buildContext(relevantDocs);
-        List<String> sources = knowledgeBaseService.getSources(relevantDocs);
+        // 1. 标准 RAG 检索：文档分块 → TF-IDF 向量化 → 余弦相似度
+        List<KnowledgeChunk> relevantChunks = knowledgeBaseService.retrieveChunks(request.getMessage(), 5);
+        String context = knowledgeBaseService.buildContextFromChunks(relevantChunks);
+        List<String> sources = knowledgeBaseService.getSourcesFromChunks(relevantChunks);
 
         // 2. 构建系统提示词
         String systemPrompt = buildSystemPrompt(context);
@@ -58,9 +58,9 @@ public class ChatService {
         long responseTime = System.currentTimeMillis() - startTime;
 
         // AI 命中日志：一次问答完整链路
-        log.info("[AI问答] session={}, userId={}, 问题=\"{}\", 命中知识库{}篇[{}], 模型耗时{}ms, 回答{}字",
+        log.info("[AI问答] session={}, userId={}, 问题=\"{}\", RAG命中{}个分块[{}], 模型耗时{}ms, 回答{}字",
                 sessionId, request.getUserId(), abbreviate(request.getMessage(), 100),
-                relevantDocs.size(), String.join(";", sources), responseTime, answer.length());
+                relevantChunks.size(), String.join(";", sources), responseTime, answer.length());
 
         // 5. 保存对话记录
         saveMessage(sessionId, request.getUserId(), "user", request.getMessage(), null);
@@ -88,10 +88,10 @@ public class ChatService {
             sessionId = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         }
 
-        // 1. 检索知识库
-        List<KnowledgeDoc> relevantDocs = knowledgeBaseService.retrieve(request.getMessage(), 5);
-        String context = knowledgeBaseService.buildContext(relevantDocs);
-        List<String> sources = knowledgeBaseService.getSources(relevantDocs);
+        // 1. 标准 RAG 检索：文档分块 → TF-IDF 向量化 → 余弦相似度
+        List<KnowledgeChunk> relevantChunks = knowledgeBaseService.retrieveChunks(request.getMessage(), 5);
+        String context = knowledgeBaseService.buildContextFromChunks(relevantChunks);
+        List<String> sources = knowledgeBaseService.getSourcesFromChunks(relevantChunks);
 
         // 2. 系统提示词 + 历史
         String systemPrompt = buildSystemPrompt(context);
@@ -110,9 +110,9 @@ public class ChatService {
         long responseTime = System.currentTimeMillis() - startTime;
 
         // AI 命中日志（流式）
-        log.info("[AI问答-流式] session={}, userId={}, 问题=\"{}\", 命中知识库{}篇[{}], 模型耗时{}ms, 回答{}字",
+        log.info("[AI问答-流式] session={}, userId={}, 问题=\"{}\", RAG命中{}个分块[{}], 模型耗时{}ms, 回答{}字",
                 sid, request.getUserId(), abbreviate(request.getMessage(), 100),
-                relevantDocs.size(), String.join(";", sources), responseTime, answer.length());
+                relevantChunks.size(), String.join(";", sources), responseTime, answer.length());
 
         // 5. 保存 AI 回答
         Long assistantMsgId = saveMessage(sid, request.getUserId(), "assistant", answer,

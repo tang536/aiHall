@@ -27,7 +27,7 @@
           </div>
 
           <div v-if="searchResult" class="search-result">
-            <UserCard :user="searchResult" show-chat show-add @chat="startChat" @add="addFriend" />
+            <UserCard :user="searchResult" show-chat show-add @chat="startChat" @add="addFriend" @remove="removeFriend" />
           </div>
           <el-empty
             v-else-if="searched"
@@ -79,7 +79,7 @@
           </template>
           <div v-loading="loading" class="request-list">
             <div v-for="r in requests" :key="r.id" class="request-item">
-              <el-avatar :size="38" class="avatar">{{ (r.user?.displayName || '?').charAt(0) }}</el-avatar>
+              <el-avatar :size="38" class="avatar" :src="r.user?.avatar ? resolveAvatarUrl(r.user.avatar) : ''">{{ (r.user?.displayName || '?').charAt(0) }}</el-avatar>
               <div class="req-info">
                 <div class="req-name">{{ r.user?.displayName || '未知用户' }}</div>
                 <div class="req-meta">
@@ -123,6 +123,7 @@ import {
   searchUser, listFriends, friendRequests, sentFriendRequests,
   sendFriendRequest, acceptFriend, rejectFriend, deleteFriend
 } from '@/api'
+import { resolveAvatarUrl } from '@/utils/community'
 
 const router = useRouter()
 
@@ -213,6 +214,9 @@ async function removeFriend(f) {
   try {
     await deleteFriend(f.userId)
     ElMessage.success('已删除好友')
+    if (searchResult.value && Number(searchResult.value.userId) === Number(f.userId)) {
+      searchResult.value.friend = false
+    }
     loadAll()
   } catch {
     /* 拦截器已提示 */

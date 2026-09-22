@@ -103,7 +103,7 @@
         <el-divider />
         <template v-if="userStore.isLoggedIn">
           <div class="mobile-user-info">
-            <el-avatar :size="40" class="avatar">{{ userStore.userName.charAt(0) }}</el-avatar>
+            <el-avatar :size="40" class="avatar" :src="userStore.userInfo?.avatar ? resolveAvatarUrl(userStore.userInfo.avatar) : ''">{{ userStore.userName.charAt(0) }}</el-avatar>
             <span class="mobile-username">{{ userStore.userName }}</span>
           </div>
           <el-divider />
@@ -196,6 +196,7 @@ import { logout as apiLogout } from '@/api'
 import { useFocusMode } from '@/composables/useFocusMode'
 import { connect as connectChat, disconnect as disconnectChat } from '@/composables/useChatSocket'
 import { School } from '@element-plus/icons-vue'
+import { resolveAvatarUrl } from '@/utils/community'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 
 const route = useRoute()

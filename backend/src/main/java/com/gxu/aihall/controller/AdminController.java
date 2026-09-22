@@ -35,6 +35,7 @@ public class AdminController {
     private final ApplicationService applicationService;
     private final NotificationService notificationService;
     private final KnowledgeDocRepository knowledgeDocRepository;
+    private final KnowledgeBaseService knowledgeBaseService;
     private final SystemSettingService systemSettingService;
     private final FeedbackService feedbackService;
     private final MarketService marketService;
@@ -49,6 +50,7 @@ public class AdminController {
                            ApplicationService applicationService,
                            NotificationService notificationService,
                            KnowledgeDocRepository knowledgeDocRepository,
+                           KnowledgeBaseService knowledgeBaseService,
                            SystemSettingService systemSettingService,
                            FeedbackService feedbackService,
                            MarketService marketService,
@@ -62,6 +64,7 @@ public class AdminController {
         this.applicationService = applicationService;
         this.notificationService = notificationService;
         this.knowledgeDocRepository = knowledgeDocRepository;
+        this.knowledgeBaseService = knowledgeBaseService;
         this.systemSettingService = systemSettingService;
         this.feedbackService = feedbackService;
         this.marketService = marketService;
@@ -166,20 +169,25 @@ public class AdminController {
         if (doc.getTitle() != null && knowledgeDocRepository.existsByTitle(doc.getTitle())) {
             return Result.error("知识库中已存在标题为「" + doc.getTitle() + "」的文档，请勿重复添加");
         }
-        return Result.success("添加成功", knowledgeDocRepository.save(doc));
+        KnowledgeDoc saved = knowledgeDocRepository.save(doc);
+        knowledgeBaseService.indexDocument(saved.getId());
+        return Result.success("添加成功", saved);
     }
 
     @Audited(action = "UPDATE_KNOWLEDGE", targetType = "KNOWLEDGE_DOC", targetIdParam = "id")
     @PutMapping("/knowledge/{id}")
     public Result<KnowledgeDoc> updateKnowledge(@PathVariable Long id, @RequestBody KnowledgeDoc doc) {
         doc.setId(id);
-        return Result.success(knowledgeDocRepository.save(doc));
+        KnowledgeDoc saved = knowledgeDocRepository.save(doc);
+        knowledgeBaseService.indexDocument(id);
+        return Result.success(saved);
     }
 
     @Audited(action = "DELETE_KNOWLEDGE", targetType = "KNOWLEDGE_DOC", targetIdParam = "id")
     @DeleteMapping("/knowledge/{id}")
     public Result<Void> deleteKnowledge(@PathVariable Long id) {
         knowledgeDocRepository.deleteById(id);
+        knowledgeBaseService.deleteDocument(id);
         return Result.success();
     }
 

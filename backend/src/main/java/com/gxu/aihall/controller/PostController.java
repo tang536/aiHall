@@ -39,8 +39,11 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public Result<PostVO> detail(@PathVariable Long id) {
-        PostVO vo = postService.getDetail(id);
+    public Result<PostVO> detail(@RequestHeader(value = "Authorization", required = false) String token,
+                                  @PathVariable Long id) {
+        User currentUser = authService.getUserByBearerToken(token);
+        Long currentUserId = currentUser != null ? currentUser.getId() : null;
+        PostVO vo = postService.getDetail(id, currentUserId);
         if (vo == null) return Result.error("帖子不存在或已被删除");
         return Result.success(vo);
     }
@@ -95,9 +98,9 @@ public class PostController {
     @PostMapping("/{id}/like")
     public Result<Map<String, Object>> like(@RequestHeader(value = "Authorization", required = false) String token,
                                             @PathVariable Long id) {
-        authService.requireLogin(token, "请先登录后再点赞");
-        Post post = postService.like(id);
-        return Result.success(Map.of("likeCount", post.getLikeCount()));
+        User user = authService.requireLogin(token, "请先登录后再点赞");
+        Map<String, Object> result = postService.toggleLike(user.getId(), id);
+        return Result.success(result);
     }
 
     private Long parseLong(Object raw) {

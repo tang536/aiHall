@@ -324,7 +324,7 @@ onBeforeUnmount(() => {
 }
 
 .avatar {
-  background: linear-gradient(135deg, #409eff, #67c23a);
+  background: linear-gradient(135deg, #941e23, #761317);
   color: #fff;
   font-weight: 700;
   flex-shrink: 0;

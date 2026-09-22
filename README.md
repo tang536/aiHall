@@ -218,12 +218,29 @@ aiHall/
 | 依赖 | 最低版本 | 说明 |
 |------|----------|------|
 | JDK | 21 | 后端编译运行 |
-| Maven | 3.6+ | 后端构建 |
+| Maven | - | 项目已自带 Maven Wrapper（mvnw.cmd），无需全局安装 |
 | Node.js | 18+ | 前端构建（推荐 20+） |
 | npm | 9+ | 前端包管理 |
 | MySQL | 8.0+ | 数据库（用户名 root，密码 12345） |
 | Ollama | 最新 | AI 问答功能（可选，不启动不影响其他功能） |
 
+### 一键启动（推荐 Windows）
+
+项目根目录提供了一键启动脚本，自动完成依赖检查、后端编译、双端启动，并打开浏览器：
+
+```bash
+# 双击运行，或在命令行执行
+start-all.bat
+```
+
+脚本会依次启动：
+- **后端服务**：Spring Boot（端口 8080），首次启动自动下载 Maven 依赖
+- **学生端**：Vite 开发服务器（端口 5173）
+- **管理端**：Vite 开发服务器（端口 5174）
+
+三个服务分别在独立窗口运行，关闭窗口即停止。如需一键停止所有服务，运行 stop-all.bat。
+
+> 前置条件：MySQL 已启动（用户名 root，密码 12345）；AI 问答功能需额外启动 Ollama。
 ### 1. 配置 MySQL
 
 确保 MySQL 服务已启动，用户名 `root`，密码 `12345`。
@@ -254,7 +271,7 @@ ollama serve
 
 ```bash
 cd backend
-mvn spring-boot:run
+mvnw.cmd spring-boot:run
 ```
 
 后端启动后：
@@ -546,7 +563,7 @@ app:
 
 ```bash
 cd backend
-mvn clean package -DskipTests
+mvnw.cmd clean package -DskipTests
 # 产物：target/ai-student-hall-1.0.0.jar
 ```
 
@@ -693,6 +710,49 @@ A: 确认 WebSocket 连接正常。多实例部署时需将 `app.session.store` 
 - MarketService/FriendService 误用不存在的 User.getNickname() 方法
 - 二手交易发布商品后不自动刷新
 
+**知识库 RAG 检索改造：**
+- 新建 `KnowledgeChunk` 实体（文档分块，docId + chunkIndex + content + tokenCount + priority）
+- 新建 `TextChunker` 工具类（按段落/句子切分，500字/块，100字重叠）
+- 新建 `TfidfVectorizer` 工具类（TF-IDF 向量化 + 余弦相似度，中文二元分词 + 停用词过滤）
+- 重构 `KnowledgeBaseService`（retrieveChunks 标准RAG检索、indexDocument 分块索引、向量缓存、自动建索引）
+- 修改 `ChatService`（改用 retrieveChunks + buildContextFromChunks）
+- 修改 `AdminController`（知识库增删改后同步更新分块索引）
+
+
+### v1.1.0（2026-09-22）
+
+**交互优化：**
+- 帖子点赞改为 toggle 模式：同一用户对同一帖子只能点赞一次，再次点击取消点赞（PostLike 实体联合唯一约束，PostVO 新增 liked 字段）
+- 好友状态联动：已是好友时不再显示「加好友」，改为「删好友」；私聊窗口顶部同步好友状态
+- 私聊窗口点击对方头像可跳转其个人主页
+- 学号不再作为隐私字段，用户主页公开显示学号
+
+**功能新增：**
+- 个人中心支持自定义头像上传（上传后全站头像优先显示图片，无头像回退文字首字母）
+- 论坛帖子详情页支持收藏，「我的收藏」可查看收藏的帖子
+- 二手交易商品详情页支持收藏，「我的收藏」可查看收藏的商品
+- 购买商品后自动通知卖家，好友申请后自动通知对方
+
+**知识库 RAG 检索改造：**
+- 新建 KnowledgeChunk 实体（文档分块，500字/块，100字重叠）
+- 新建 TextChunker（按段落/句子切分）、TfidfVectorizer（TF-IDF 向量化 + 余弦相似度）
+- 重构 KnowledgeBaseService（标准 RAG 检索、分块索引、向量缓存）
+- ChatService 改用 retrieveChunks + buildContextFromChunks
+
+**工程化：**
+- 后端添加 Maven Wrapper（mvnw.cmd），无需全局安装 Maven 即可构建运行
+- 新增一键启动脚本 start-all.bat（自动检查环境、安装依赖、启动后端+学生端+管理端、打开浏览器）
+- 新增停止脚本 stop-all.bat（一键停止所有服务）
+- 删除微信小程序端，专注 Web 端
+
+**UI 统一：**
+- 全站默认头像背景色统一为广西大学深红渐变 linear-gradient(135deg, #941e23, #761317)
+  （此前学生端 7 个页面/组件使用蓝绿渐变 #409eff→#67c23a，与整体风格不一致）
+
+**Bug 修复：**
+- 学生端 API getProfile 路径错误（/auth/profile → /auth/userinfo），导致 GET method not supported
+- 前端多处跳转用户主页时未校验 ID，undefined 被序列化为字符串传入后端导致 Long 转换失败
+- 前端所有跳转函数统一添加 isValidId 校验，无效 ID 提示并返回
 ---
 
 ## 许可证

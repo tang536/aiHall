@@ -84,7 +84,7 @@ ALTER TABLE post        ADD FULLTEXT INDEX ft_post_search (title, content) WITH 
 -- ============================================================================
 ALTER TABLE user_binding
   ADD COLUMN active_binding_key VARCHAR(80)
-    GENERATED ALWAYS AS (CASE WHEN status = 1 THEN CONCAT(platform, ':', bind_account) ELSE NULL END) STORED;
+    GENERATED ALWAYS AS (CASE WHEN status = 1 THEN CONCAT(platform, ':', bind_account) END) STORED;
 ALTER TABLE user_binding ADD UNIQUE KEY uk_user_binding_active (active_binding_key);
 
 -- 注意：应用层 PlatformBindService.saveBinding 也会先做一次可读性更好的校验，

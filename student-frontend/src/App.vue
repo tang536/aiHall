@@ -439,7 +439,7 @@ const handleCommand = async (command) => {
 }
 
 .avatar {
-  background: var(--ct-red);
+  background: linear-gradient(135deg, #941e23, #761317);
   color: #fff;
   font-weight: 700;
 }

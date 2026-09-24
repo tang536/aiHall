@@ -2,7 +2,7 @@
   <div class="map-page">
     <div class="page-header">
       <h2><el-icon><Location /></el-icon> 校园地图导航</h2>
-      <p>广西大学离线地图：本地瓦片 + 本地路网寻路 + 浏览器定位，无需任何地图服务 AK</p>
+      <p>广西大学离线地图</p>
     </div>
 
     <!-- 数据源提示（仅当使用离线兜底数据时显示） -->
@@ -206,6 +206,11 @@
           <span v-if="routeSummary" class="route-panel-summary">
             全程 <strong>{{ routeSummary.distance }}</strong> · 约 <strong>{{ routeSummary.duration }}</strong>
           </span>
+          <el-tooltip :content="isSpeaking ? '停止播报' : '语音播报路线'" placement="top">
+            <el-button text size="small" :class="{ 'speaking-btn': isSpeaking }" @click.stop="toggleRouteSpeech()">
+              <el-icon><VideoPlay v-if="!isSpeaking" /><VideoPause v-else /></el-icon>
+            </el-button>
+          </el-tooltip>
           <el-button text size="small" @click.stop="clearRoute()"><el-icon><Close /></el-icon></el-button>
           <el-icon class="collapse-icon" :class="{ rotated: routePanelCollapsed }"><ArrowDown /></el-icon>
         </div>
@@ -278,6 +283,7 @@ const routeResult = ref(null)
 const routePanelCollapsed = ref(false)
 const routeSummary = ref(null)
 const routeSteps = ref([])
+const isSpeaking = ref(false)
 const locating = ref(false)
 const currentPos = ref(null)
 const currentPosSource = ref('')
@@ -591,6 +597,7 @@ function navigateToCustomFromMe() {
 
 /** 清除路线；keepRequest=true 时保留最近一次导航请求（供切换出行方式后重算） */
 function clearRoute(keepRequest = false) {
+  stopRouteSpeech()
   if (map) {
     if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null }
     if (routeStartMarker) { map.removeLayer(routeStartMarker); routeStartMarker = null }
@@ -602,6 +609,69 @@ function clearRoute(keepRequest = false) {
   routeNotice.value = ''
   routePanelCollapsed.value = false
   if (!keepRequest) lastRoute.value = null
+}
+
+// ==================== 导航路线语音播报 ====================
+
+function buildRouteSpeechText() {
+  const parts = []
+  const mode = modeProfile.value.label
+  const lr = lastRoute.value
+  if (lr) {
+    parts.push('开始' + mode + '导航')
+    if (lr.startName) parts.push('从' + lr.startName + '出发')
+    if (lr.destName) parts.push('前往' + lr.destName)
+  }
+  if (routeSummary.value) {
+    parts.push('全程约' + routeSummary.value.distance + '，预计需要' + routeSummary.value.duration)
+  }
+  if (routeNotice.value) {
+    parts.push(routeNotice.value)
+  }
+  if (routeSteps.value && routeSteps.value.length > 0) {
+    parts.push('导航指引如下')
+    routeSteps.value.forEach((step, idx) => {
+      const cleanStep = String(step).replace(/[^\u4e00-\u9fa5a-zA-Z0-9，。、；：！？\s]/g, '').trim()
+      if (cleanStep) {
+        parts.push('第' + (idx + 1) + '步，' + cleanStep)
+      }
+    })
+  }
+  parts.push('导航播报完毕，祝您一路平安')
+  return parts.join('。')
+}
+
+function toggleRouteSpeech() {
+  if (isSpeaking.value) {
+    stopRouteSpeech()
+    return
+  }
+  if (!('speechSynthesis' in window)) {
+    ElMessage.warning('当前浏览器不支持语音播报')
+    return
+  }
+  const text = buildRouteSpeechText()
+  if (!text) {
+    ElMessage.info('暂无可播报的导航信息')
+    return
+  }
+  window.speechSynthesis.cancel()
+  const utter = new SpeechSynthesisUtterance(text)
+  utter.lang = 'zh-CN'
+  utter.rate = 1.0
+  utter.pitch = 1.0
+  utter.volume = 1.0
+  utter.onend = () => { isSpeaking.value = false }
+  utter.onerror = () => { isSpeaking.value = false }
+  isSpeaking.value = true
+  window.speechSynthesis.speak(utter)
+}
+
+function stopRouteSpeech() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+  }
+  isSpeaking.value = false
 }
 
 // ==================== 地图点击选点 ====================
@@ -802,6 +872,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  stopRouteSpeech()
   isUnmounted = true
   if (map) {
     map.off('click', handleMapClick)
@@ -1295,6 +1366,16 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+/* 语音播报按钮 */
+.speaking-btn {
+  color: #941e23 !important;
+  animation: speakingPulse 1.2s ease-in-out infinite;
+}
+@keyframes speakingPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .route-panel-summary {

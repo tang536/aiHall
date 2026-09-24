@@ -333,6 +333,142 @@ onMounted(() => {
 })
 </script>
 
+<style scoped>
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
 
-      param($m) $m.Groups[1].Value -replace 'border-radius:\s*\d+px;', 'border-radius: 0;'
-    
+.search-input {
+  flex: 1;
+  max-width: 460px;
+}
+
+.category-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.post-list {
+  display: grid;
+  gap: 14px;
+  min-height: 100px;
+}
+
+.post-card {
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.post-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.post-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.avatar {
+  background: linear-gradient(135deg, #941e23, #761317);
+  color: #fff;
+  font-weight: 700;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  opacity: 0.8;
+}
+
+.head-info {
+  min-width: 0;
+}
+
+.author-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.author {
+  font-weight: 600;
+  font-size: 14px;
+  color: #303133;
+}
+
+.sub-line {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: #909399;
+  margin-top: 2px;
+}
+
+.post-title {
+  margin: 10px 0 6px;
+  font-size: 16px;
+  color: #303133;
+}
+
+.post-excerpt {
+  margin: 0;
+  color: #606266;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.post-images {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.thumb {
+  width: 104px;
+  height: 78px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.post-foot {
+  display: flex;
+  gap: 18px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.post-foot span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pager {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-input {
+    max-width: none;
+  }
+}
+</style>

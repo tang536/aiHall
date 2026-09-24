@@ -322,9 +322,9 @@ onMounted(() => {
 }
 
 .gallery {
-  background: var(--ct-white);
-  border: 1px solid var(--ct-line);
-  border-radius: 0;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 12px;
   padding: 12px;
 }
 
@@ -333,8 +333,8 @@ onMounted(() => {
   width: 100%;
   height: 360px;
   display: block;
-  background: #faf7f2;
-  border-radius: 0;
+  background: #f7f8fa;
+  border-radius: 8px;
 }
 
 .gallery-empty {
@@ -344,15 +344,15 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: #a8a49c;
-  background: #faf7f2;
-  border-radius: 0;
+  color: #c0c4cc;
+  background: #f7f8fa;
+  border-radius: 8px;
 }
 
 .info-panel {
-  background: var(--ct-white);
-  border: 1px solid var(--ct-line);
-  border-radius: 0;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 12px;
   padding: 18px;
 }
 
@@ -367,7 +367,7 @@ onMounted(() => {
   margin: 0;
   font-size: 19px;
   line-height: 1.45;
-  color: var(--ct-ink);
+  color: #303133;
 }
 
 .price-box {
@@ -376,18 +376,18 @@ onMounted(() => {
   gap: 10px;
   margin: 14px 0;
   padding: 12px 14px;
-  border-radius: 0;
-  background: var(--ct-red-soft);
+  border-radius: 10px;
+  background: #fff5f5;
 }
 
 .price {
-  color: var(--ct-red);
+  color: #f56c6c;
   font-size: 27px;
   font-weight: 700;
 }
 
 .origin-price {
-  color: #a8a49c;
+  color: #c0c4cc;
   font-size: 13px;
   text-decoration: line-through;
 }
@@ -405,17 +405,17 @@ onMounted(() => {
 
 .attr .k {
   width: 88px;
-  color: var(--ct-muted);
+  color: #909399;
   flex-shrink: 0;
 }
 
 .attr .v {
-  color: var(--ct-ink);
+  color: #303133;
   word-break: break-all;
 }
 
 .balance-text {
-  color: var(--ct-gold);
+  color: #e6a23c;
   font-weight: 600;
 }
 
@@ -435,38 +435,38 @@ onMounted(() => {
   gap: 5px;
   margin: 10px 0 0;
   font-size: 12px;
-  color: #a8a49c;
+  color: #c0c4cc;
 }
 
 .desc-card {
   margin-top: 20px;
-  background: var(--ct-white);
-  border: 1px solid var(--ct-line);
-  border-radius: 0;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 12px;
   padding: 18px;
 }
 
 .desc-card h4 {
   margin: 0 0 10px;
   font-size: 15px;
-  color: var(--ct-ink);
+  color: #303133;
 }
 
 .desc-text {
   margin: 0;
-  color: #4a4845;
+  color: #606266;
   line-height: 1.8;
   white-space: pre-wrap;
 }
 
 .insufficient {
   margin: 0 0 12px;
-  color: #4a4845;
+  color: #606266;
 }
 
 .unit {
   margin-left: 8px;
-  color: var(--ct-muted);
+  color: #909399;
   font-size: 12px;
 }
 

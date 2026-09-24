@@ -260,6 +260,127 @@ async function loadData() {
 onMounted(() => loadData())
 </script>
 
+<style scoped>
+.lostfound-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-      param($m) $m.Groups[1].Value -replace 'border-radius:\s*\d+px;', 'border-radius: 0;'
-    
+.page-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px 0;
+}
+
+.page-header p {
+  color: #909399;
+  font-size: 14px;
+  margin: 0;
+}
+
+.action-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.item-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  border: 1px solid #ebeef5;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-type-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.item-type-tag.LOST { background: linear-gradient(135deg, #f56c6c, #f78989); }
+.item-type-tag.FOUND { background: linear-gradient(135deg, #67c23a, #85ce61); }
+
+.item-icon {
+  width: 64px;
+  height: 64px;
+  background: #f5f7fa;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+}
+
+.item-card h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.item-desc {
+  font-size: 13px;
+  color: #606266;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.match-result {
+  margin-top: 16px;
+}
+
+.matched-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f0f9eb;
+  border-radius: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.matched-loc {
+  color: #909399;
+  font-size: 12px;
+  margin-left: auto;
+}
+</style>

@@ -62,7 +62,7 @@
             <el-button type="primary" @click="openImportDialog" :disabled="!userStore.isLoggedIn">
               <el-icon><Upload /></el-icon> 导入课表
             </el-button>
-            <p v-if="!userStore.isLoggedIn" style="color: var(--ct-muted);margin-top:8px;font-size:13px">请先登录后导入个人课程</p>
+            <p v-if="!userStore.isLoggedIn" style="color:#909399;margin-top:8px;font-size:13px">请先登录后导入个人课程</p>
           </el-empty>
         </div>
 
@@ -205,7 +205,7 @@
       <!-- 步骤1：选择文件 -->
       <div v-if="importStep === 'select'" class="import-step">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <span style="color: #4a4845;font-size:14px">支持 .xlsx / .xls 课表格式</span>
+          <span style="color:#606266;font-size:14px">支持 .xlsx / .xls 课表格式</span>
           <el-button type="primary" link @click="downloadTemplate">
             <el-icon><Download /></el-icon> 下载导入模板
           </el-button>
@@ -220,7 +220,7 @@
           drag>
           <div class="el-upload__text">将课表文件拖到此处，或<em>点击上传</em></div>
           <template #tip>
-            <div class="el-upload__tip" style="color: var(--ct-muted);font-size:12px;margin-top:8px">
+            <div class="el-upload__tip" style="color:#909399;font-size:12px;margin-top:8px">
               每行一门课程，列包含：课程名称、星期(1-7)、开始节数、结束节数、老师、地点、周数。周数支持"1-16"、"1-5、7-11单、12-16双"等格式
             </div>
           </template>
@@ -229,14 +229,14 @@
 
       <!-- 步骤2：解析中 -->
       <div v-else-if="importStep === 'parsing'" class="import-parsing">
-        <el-icon class="loading-icon" :size="48" color="#941e23"><Loading /></el-icon>
-        <p style="margin-top:16px;color: #4a4845">{{ parsingText }}</p>
+        <el-icon class="loading-icon" :size="48" color="#409eff"><Loading /></el-icon>
+        <p style="margin-top:16px;color:#606266">{{ parsingText }}</p>
         <el-progress :percentage="parsingProgress" :show-text="false" style="margin-top:12px" />
       </div>
 
       <!-- 步骤3：预览确认 -->
       <div v-else-if="importStep === 'preview'" class="import-preview">
-        <p style="margin-bottom:12px;color: #4a4845">已识别到 {{ parsedCourses.length }} 门课程，请确认后导入。导入将覆盖当前课表。</p>
+        <p style="margin-bottom:12px;color:#606266">已识别到 {{ parsedCourses.length }} 门课程，请确认后导入。导入将覆盖当前课表。</p>
         <el-table :data="parsedCourses" stripe size="small" max-height="320" style="width:100%">
           <el-table-column prop="courseName" label="课程" width="140" show-overflow-tooltip />
           <el-table-column prop="teacher" label="教师" width="80" />
@@ -272,21 +272,21 @@
         <el-form-item label="学期开始日期">
           <el-date-picker v-model="settingsForm.semesterStart" type="date"
             value-format="YYYY-MM-DD" placeholder="选择第一周周一" style="width:200px" />
-          <span style="margin-left:12px;color: var(--ct-muted);font-size:12px">第一周的周一</span>
+          <span style="margin-left:12px;color:#909399;font-size:12px">第一周的周一</span>
         </el-form-item>
         <el-divider content-position="left">节次时间设置</el-divider>
         <el-form-item label="统一设置">
           <div class="unified-time-row">
-            <span style="font-size:13px;color: #4a4845">首节开始</span>
+            <span style="font-size:13px;color:#606266">首节开始</span>
             <el-time-picker v-model="unifiedStart" format="HH:mm" value-format="HH:mm"
               placeholder="08:00" style="width:110px" />
-            <span style="font-size:13px;color: #4a4845">每节</span>
+            <span style="font-size:13px;color:#606266">每节</span>
             <el-input-number v-model="unifiedDuration" :min="30" :max="120" :step="5"
               size="small" style="width:100px" controls-position="right" />
-            <span style="font-size:13px;color: #4a4845">分钟，课间</span>
+            <span style="font-size:13px;color:#606266">分钟，课间</span>
             <el-input-number v-model="unifiedBreak" :min="0" :max="60" :step="5"
               size="small" style="width:100px" controls-position="right" />
-            <span style="font-size:13px;color: #4a4845">分钟</span>
+            <span style="font-size:13px;color:#606266">分钟</span>
             <el-button type="primary" size="small" @click="applyUnifiedTime">应用到全部</el-button>
           </div>
         </el-form-item>
@@ -1052,6 +1052,442 @@ onMounted(async () => {
 })
 </script>
 
+<style scoped>
+.schedule-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-      param($m) $m.Groups[1].Value -replace 'border-radius:\s*\d+px;', 'border-radius: 0;'
-    
+.page-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #303133;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px 0;
+}
+
+.page-header p {
+  color: #909399;
+  font-size: 14px;
+  margin: 0;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.week-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 16px;
+}
+
+.week-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+  cursor: pointer;
+  min-width: 80px;
+  text-align: center;
+  user-select: none;
+}
+
+.week-label:hover {
+  color: #409eff;
+}
+
+.unified-time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.section-time-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.section-time-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sec-label {
+  font-size: 12px;
+  color: #606266;
+  width: 42px;
+  flex-shrink: 0;
+}
+
+.time-sep {
+  color: #909399;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.section-time-item :deep(.el-time-picker) {
+  width: 85px;
+}
+
+.section-time-item :deep(.el-input__wrapper) {
+  padding: 0 8px;
+}
+
+.section-time-item :deep(.el-input__inner) {
+  font-size: 12px;
+}
+
+.empty-schedule {
+  background: #fff;
+  border-radius: 12px;
+  padding: 48px 24px;
+  border: 1px solid #ebeef5;
+  text-align: center;
+}
+
+.import-step, .import-parsing, .import-preview {
+  min-height: 200px;
+}
+
+.import-parsing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.loading-icon {
+  animation: rotate 1.5s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.timetable {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #ebeef5;
+}
+
+.timetable-header, .time-row {
+  display: grid;
+  grid-template-columns: 100px repeat(7, 1fr);
+}
+
+.timetable-header {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #fff;
+}
+
+.timetable-header > div {
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.timetable-header .date {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.timetable-header .today {
+  background: rgba(64, 158, 255, 0.3);
+}
+
+.time-row {
+  border-bottom: 1px solid #ebeef5;
+  min-height: 70px;
+}
+
+.time-row .time-col {
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #ebeef5;
+  padding: 8px 4px;
+}
+
+.section-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.section-time {
+  font-size: 10px;
+  color: #909399;
+  margin-top: 2px;
+}
+
+.day-col {
+  border-right: 1px solid #f0f2f5;
+  padding: 4px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.course-block {
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform 0.2s;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.course-block:hover {
+  transform: scale(1.02);
+}
+
+.course-name {
+  font-weight: 700;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.course-room, .course-teacher {
+  font-size: 10px;
+  opacity: 0.9;
+}
+
+.course-list {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.exam-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.exam-card {
+  display: flex;
+  gap: 20px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #ebeef5;
+}
+
+.exam-card.ended {
+  opacity: 0.6;
+}
+
+.exam-date {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #409eff, #66b1ff);
+  border-radius: 12px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.exam-month {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.exam-day {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.exam-info {
+  flex: 1;
+}
+
+.exam-info h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #303133;
+  margin: 0 0 10px 0;
+}
+
+.exam-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.exam-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #606266;
+}
+
+.exam-tags {
+  display: flex;
+  gap: 8px;
+}
+
+/* ========== 移动端响应式 ========== */
+@media (max-width: 768px) {
+  .page-header h2 {
+    font-size: 18px;
+  }
+  .page-header p {
+    font-size: 12px;
+  }
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .toolbar-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .week-selector {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .section-time-grid {
+    grid-template-columns: 1fr;
+  }
+  .unified-time-row {
+    gap: 6px;
+  }
+  .empty-schedule {
+    padding: 32px 16px;
+  }
+  .timetable-header, .time-row {
+    grid-template-columns: 60px repeat(7, 1fr);
+  }
+  .timetable-header > div {
+    padding: 8px 2px;
+    font-size: 12px;
+  }
+  .timetable-header .date {
+    font-size: 10px;
+  }
+  .time-row {
+    min-height: 56px;
+  }
+  .time-row .time-col {
+    padding: 6px 2px;
+  }
+  .section-num {
+    font-size: 11px;
+  }
+  .section-time {
+    font-size: 9px;
+  }
+  .day-col {
+    padding: 2px;
+  }
+  .course-block {
+    padding: 4px 4px;
+    font-size: 10px;
+    min-height: 48px;
+  }
+  .course-name {
+    font-size: 11px;
+  }
+  .course-room, .course-teacher {
+    font-size: 9px;
+  }
+  .course-list {
+    padding: 12px 8px;
+  }
+  .exam-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+  .exam-date {
+    width: 64px;
+    height: 64px;
+  }
+  .exam-day {
+    font-size: 26px;
+  }
+  .exam-info h4 {
+    font-size: 16px;
+  }
+  .exam-meta {
+    gap: 10px;
+  }
+  .exam-meta span {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .timetable-header, .time-row {
+    grid-template-columns: 50px repeat(7, 1fr);
+  }
+  .timetable-header > div {
+    font-size: 11px;
+    padding: 6px 1px;
+  }
+  .section-num {
+    font-size: 10px;
+  }
+  .section-time {
+    display: none;
+  }
+  .course-block {
+    font-size: 9px;
+    padding: 3px 2px;
+  }
+  .course-name {
+    font-size: 10px;
+  }
+  .course-room, .course-teacher {
+    font-size: 8px;
+  }
+}
+</style>

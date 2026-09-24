@@ -640,11 +640,11 @@ function addCurrentMarker(lng, lat) {
     className: 'campus-div-icon',
     html: `<div class="current-pos-dot">
       <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-        <circle cx="18" cy="18" r="16" fill="rgba(148,30,35,0.2)" stroke="#941e23" stroke-width="2">
+        <circle cx="18" cy="18" r="16" fill="rgba(64,158,255,0.2)" stroke="#409eff" stroke-width="2">
           <animate attributeName="r" values="10;16;10" dur="2s" repeatCount="indefinite"/>
           <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
         </circle>
-        <circle cx="18" cy="18" r="7" fill="#941e23" stroke="#fff" stroke-width="2"/>
+        <circle cx="18" cy="18" r="7" fill="#409eff" stroke="#fff" stroke-width="2"/>
       </svg>
     </div>`,
     iconSize: [36, 36],
@@ -812,7 +812,7 @@ onBeforeUnmount(() => {
 })
 </script>
 
-
+<style scoped>
 .map-page {
   display: flex;
   flex-direction: column;
@@ -829,7 +829,7 @@ onBeforeUnmount(() => {
 }
 
 .page-header p {
-  color: var(--ct-muted);
+  color: #909399;
   font-size: 14px;
   margin: 0;
 }
@@ -839,9 +839,9 @@ onBeforeUnmount(() => {
 }
 
 .ak-tip code {
-  background: var(--ct-paper);
+  background: #f5f7fa;
   padding: 2px 6px;
-  border-radius: 0;
+  border-radius: 4px;
   font-size: 12px;
 }
 
@@ -854,8 +854,8 @@ onBeforeUnmount(() => {
 }
 
 .map-sidebar {
-  background: var(--ct-white);
-  border-radius: 0;
+  background: #fff;
+  border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -874,20 +874,20 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 8px 4px;
-  border-top: 1px solid var(--ct-line);
-  border-bottom: 1px solid var(--ct-line);
+  border-top: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5;
   margin: 8px 0;
 }
 
 .marker-size-label {
   font-size: 12px;
-  color: var(--ct-muted);
+  color: #909399;
   white-space: nowrap;
 }
 
 .marker-size-value {
   font-size: 12px;
-  color: #4a4845;
+  color: #606266;
   font-family: monospace;
   white-space: nowrap;
   min-width: 36px;
@@ -906,26 +906,26 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 12px;
   padding: 12px;
-  border-radius: 0;
+  border-radius: 10px;
   cursor: pointer;
-  border: 1px solid var(--ct-line);
+  border: 1px solid #ebeef5;
   transition: all 0.2s;
 }
 
 .location-item:hover {
-  border-color: var(--ct-red);
-  background: var(--ct-red-soft);
+  border-color: #409eff;
+  background: #f5f9ff;
 }
 
 .location-item.active {
-  border-color: var(--ct-red);
-  background: var(--ct-red-soft);
+  border-color: #409eff;
+  background: #ecf5ff;
 }
 
 .loc-icon {
   width: 40px;
   height: 40px;
-  border-radius: 0;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -941,7 +941,7 @@ onBeforeUnmount(() => {
 
 .loc-info p {
   font-size: 12px;
-  color: var(--ct-muted);
+  color: #909399;
   margin: 0;
 }
 
@@ -953,8 +953,8 @@ onBeforeUnmount(() => {
 
 .map-area {
   position: relative;
-  background: var(--ct-white);
-  border-radius: 0;
+  background: #fff;
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -976,7 +976,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   background: rgba(255,255,255,0.95);
   padding: 10px 8px;
-  border-radius: 0;
+  border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   backdrop-filter: blur(8px);
 }
@@ -984,7 +984,7 @@ onBeforeUnmount(() => {
 .toolbar-sep {
   width: 28px;
   height: 1px;
-  background: #e0d9cc;
+  background: #e4e7ed;
   margin: 2px 0;
 }
 
@@ -1011,7 +1011,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   padding: 5px;
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 0;
+  border-radius: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -1020,24 +1020,24 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border: 1px solid var(--ct-line);
-  border-radius: 0;
-  background: var(--ct-white);
-  color: #4a4845;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  background: #fff;
+  color: #606266;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .mode-btn:hover {
-  border-color: var(--ct-red);
-  color: var(--ct-red);
+  border-color: #409eff;
+  color: #409eff;
 }
 
 .mode-btn.active {
   color: #fff;
-  border-color: var(--ct-red);
-  background: var(--ct-red);
+  border-color: #409eff;
+  background: #409eff;
 }
 
 .poi-results-panel {
@@ -1047,8 +1047,8 @@ onBeforeUnmount(() => {
   z-index: 500;
   width: 320px;
   max-height: 400px;
-  background: var(--ct-white);
-  border-radius: 0;
+  background: #fff;
+  border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   overflow: hidden;
   display: flex;
@@ -1060,10 +1060,10 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--ct-line);
+  border-bottom: 1px solid #ebeef5;
   font-size: 13px;
   font-weight: 600;
-  color: var(--ct-ink);
+  color: #303133;
   flex-shrink: 0;
 }
 
@@ -1077,19 +1077,19 @@ onBeforeUnmount(() => {
   gap: 10px;
   padding: 10px 14px;
   cursor: pointer;
-  border-bottom: 1px solid var(--ct-line);
+  border-bottom: 1px solid #f5f7fa;
   transition: background 0.2s;
 }
 
 .poi-result-item:hover {
-  background: var(--ct-red-soft);
+  background: #f5f9ff;
 }
 
 .poi-idx {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--ct-red);
+  background: #409eff;
   color: #fff;
   font-size: 12px;
   display: flex;
@@ -1106,7 +1106,7 @@ onBeforeUnmount(() => {
 .poi-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--ct-ink);
+  color: #303133;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1114,7 +1114,7 @@ onBeforeUnmount(() => {
 
 .poi-addr {
   font-size: 12px;
-  color: var(--ct-muted);
+  color: #909399;
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -1130,11 +1130,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--ct-white);
-  border-radius: 0;
+  background: #fff;
+  border-radius: 20px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   font-size: 12px;
-  color: var(--ct-red);
+  color: #409eff;
   font-weight: 600;
 }
 
@@ -1157,8 +1157,8 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--ct-paper);
-  color: var(--ct-muted);
+  background: #f5f7fa;
+  color: #909399;
   gap: 12px;
   z-index: 600;
 }
@@ -1177,8 +1177,8 @@ onBeforeUnmount(() => {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  background: var(--ct-white);
-  border-radius: 0;
+  background: #fff;
+  border-radius: 12px;
   padding: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   z-index: 400;
@@ -1208,7 +1208,7 @@ onBeforeUnmount(() => {
 .detail-image {
   width: calc(50% - 4px);
   height: 120px;
-  border-radius: 0;
+  border-radius: 8px;
   cursor: pointer;
 }
 
@@ -1217,12 +1217,12 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #4a4845;
+  color: #606266;
   margin: 4px 0;
 }
 
 .detail-desc {
-  color: var(--ct-muted) !important;
+  color: #909399 !important;
   margin-top: 8px !important;
 }
 
@@ -1240,8 +1240,8 @@ onBeforeUnmount(() => {
 
 .route-panel {
   margin-top: 16px;
-  background: var(--ct-white);
-  border-radius: 0;
+  background: #fff;
+  border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   overflow: hidden;
 }
@@ -1253,7 +1253,7 @@ onBeforeUnmount(() => {
   padding: 12px 16px;
   cursor: pointer;
   user-select: none;
-  border-bottom: 1px solid var(--ct-line);
+  border-bottom: 1px solid #ebeef5;
 }
 
 .route-panel-header h3 {
@@ -1268,7 +1268,7 @@ onBeforeUnmount(() => {
 .route-mode-tag {
   display: inline-block;
   padding: 1px 10px;
-  border-radius: 0;
+  border-radius: 10px;
   font-size: 12px;
   font-weight: 500;
   color: #fff;
@@ -1284,7 +1284,7 @@ onBeforeUnmount(() => {
 
 .route-mode-label {
   font-size: 13px;
-  color: var(--ct-muted);
+  color: #909399;
 }
 
 .route-notice {
@@ -1299,17 +1299,17 @@ onBeforeUnmount(() => {
 
 .route-panel-summary {
   font-size: 13px;
-  color: #4a4845;
+  color: #606266;
 }
 
 .route-panel-summary strong {
-  color: var(--ct-red);
+  color: #409eff;
 }
 
 .collapse-icon {
   transition: transform 0.3s;
   font-size: 14px;
-  color: var(--ct-muted);
+  color: #909399;
 }
 
 .collapse-icon.rotated {
@@ -1332,15 +1332,15 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 10px;
   padding: 8px;
-  border-radius: 0;
-  background: #faf7f2;
+  border-radius: 8px;
+  background: #fafafa;
 }
 
 .step-num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--ct-red);
+  background: #409eff;
   color: #fff;
   font-size: 12px;
   display: flex;
@@ -1351,10 +1351,10 @@ onBeforeUnmount(() => {
 
 .step-text {
   font-size: 12px;
-  color: #4a4845;
+  color: #606266;
   line-height: 1.5;
 }
-
+</style>
 
 <style>
 /* 非 scoped：Leaflet 容器与 divIcon 样式 */

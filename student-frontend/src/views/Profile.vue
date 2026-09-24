@@ -538,6 +538,272 @@ onMounted(() => {
 })
 </script>
 
+<style scoped>
+.profile-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
 
-      param($m) $m.Groups[1].Value -replace 'border-radius:\s*\d+px;', 'border-radius: 0;'
-    
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  color: #303133;
+}
+
+.page-header p {
+  margin: 0;
+  color: #909399;
+  font-size: 14px;
+}
+
+.loading-wrap {
+  min-height: 300px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.profile-form :deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+/* ========== 头像上传 ========== */
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #fafbfc;
+  border-radius: 10px;
+  border: 1px solid #ebeef5;
+}
+
+.avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-wrapper:hover .avatar-mask {
+  opacity: 1;
+}
+
+.avatar-img {
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-placeholder {
+  background: linear-gradient(135deg, #941e23, #761317);
+  color: #fff;
+  font-weight: 700;
+  font-size: 28px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.avatar-mask .el-icon {
+  font-size: 20px;
+}
+
+.avatar-tip {
+  flex: 1;
+}
+
+.avatar-tip p {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  color: #606266;
+}
+
+.avatar-tip p:last-child {
+  color: #909399;
+  font-size: 12px;
+}
+
+.form-actions {
+  margin-top: 8px;
+}
+
+.form-actions .el-button .el-icon {
+  margin-right: 6px;
+}
+
+/* ========== 校园平台绑定 ========== */
+.card-sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: #909399;
+  margin-left: 8px;
+}
+
+.bind-block {
+  padding: 16px;
+  border: 1px solid #ebeef5;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  background: #fafbfc;
+}
+
+.bind-block:last-child {
+  margin-bottom: 0;
+}
+
+.bind-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.bind-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.bind-form {
+  max-width: none;
+}
+
+.bind-btn-col {
+  display: flex;
+  align-items: flex-start;
+}
+
+.tip {
+  margin: 10px 0 0 0;
+  font-size: 13px;
+  color: #909399;
+}
+
+/* ========== 专注模式 ========== */
+.focus-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #ebeef5;
+  border-radius: 10px;
+  background: #fafbfc;
+}
+
+.focus-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.focus-desc {
+  font-size: 13px;
+  color: #606266;
+}
+
+/* ========== 钱包 ========== */
+.wallet-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
+  color: #fff;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.balance-label {
+  display: block;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.balance-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.wallet-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.dialog-tip {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #909399;
+}
+
+.quick-amounts {
+  display: flex;
+  gap: 8px;
+  padding-left: 72px;
+  margin-top: -6px;
+}
+
+.income {
+  color: #f56c6c;
+  font-weight: 600;
+}
+
+.expense {
+  color: #67c23a;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+  }
+  .profile-form :deep(.el-form-item__label) {
+    width: 80px !important;
+  }
+}
+</style>

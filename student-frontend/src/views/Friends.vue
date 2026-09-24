@@ -265,6 +265,112 @@ function sentStatusType(status) {
 onMounted(loadAll)
 </script>
 
+<style scoped>
+.block {
+  margin-bottom: 16px;
+}
 
-      param($m) $m.Groups[1].Value -replace 'border-radius:\s*\d+px;', 'border-radius: 0;'
-    
+.block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #303133;
+}
+
+.req-badge {
+  margin-left: 6px;
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+}
+
+.search-result {
+  margin-top: 12px;
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #a8abb2;
+}
+
+.friend-list,
+.request-list,
+.sent-list {
+  min-height: 60px;
+}
+
+.friend-item {
+  margin-bottom: 10px;
+}
+
+.avatar {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #941e23, #761317);
+  color: #fff;
+  font-weight: 700;
+}
+
+.request-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f7fa;
+}
+
+.request-item:last-child {
+  border-bottom: none;
+}
+
+.req-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.req-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.req-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.req-msg {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.req-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.sent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f7fa;
+}
+
+.sent-item:last-child {
+  border-bottom: none;
+}
+
+.sent-name {
+  font-size: 13px;
+  color: #606266;
+}
+</style>

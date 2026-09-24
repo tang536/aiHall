@@ -156,7 +156,10 @@ async function handleCommand(command) {
   height: 100vh;
   min-height: 500px;
   overflow: hidden;
-  background: var(--ct-paper);
+  background: linear-gradient(135deg, #f7f3ec 0%, #f0e9dc 100%);
+  padding: 14px;
+  gap: 14px;
+  box-sizing: border-box;
 }
 
 .admin-sidebar {
@@ -165,8 +168,23 @@ async function handleCommand(command) {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: width 0.2s ease;
-  border-right: 3px solid var(--ct-gold);
+  transition: width 0.25s ease;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(118, 19, 23, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 悬浮岛顶部金色装饰条 */
+.admin-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #b8935a, transparent);
+  border-radius: 0 0 3px 3px;
 }
 
 .admin-sidebar.is-mobile {
@@ -197,11 +215,10 @@ async function handleCommand(command) {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 20px 16px;
+  padding: 22px 18px 18px;
   color: #fff;
   font-size: 17px;
   font-weight: 700;
-  border-bottom: 1px solid rgba(240, 200, 150, 0.2);
   font-family: var(--ct-serif);
   letter-spacing: 2px;
 }
@@ -228,9 +245,12 @@ async function handleCommand(command) {
 }
 
 .sidebar-menu :deep(.el-menu-item) {
-  height: 48px;
-  line-height: 48px;
+  height: 44px;
+  line-height: 44px;
   transition: all 0.2s;
+  margin: 2px 10px;
+  border-radius: 10px;
+  width: auto;
 }
 
 .sidebar-menu :deep(.el-menu-item:hover) {
@@ -239,13 +259,13 @@ async function handleCommand(command) {
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active) {
-  background: rgba(240, 200, 150, 0.18) !important;
-  border-left: 3px solid var(--ct-gold);
+  background: rgba(240, 200, 150, 0.2) !important;
+  color: #f0c896 !important;
+  box-shadow: inset 0 0 0 1px rgba(240, 200, 150, 0.3);
 }
 
 .sidebar-footer {
-  padding: 16px;
-  border-top: 1px solid rgba(240, 200, 150, 0.2);
+  padding: 14px 16px 18px;
 }
 
 .sidebar-footer :deep(.el-button) {
@@ -261,8 +281,8 @@ async function handleCommand(command) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--ct-paper);
   min-width: 0;
+  gap: 14px;
 }
 
 .admin-header {
@@ -271,8 +291,9 @@ async function handleCommand(command) {
   align-items: center;
   padding: 16px 28px;
   background: var(--ct-white);
-  border-bottom: 1px solid var(--ct-line);
-  border-top: 5px solid var(--ct-red);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .admin-header h2 {
@@ -328,27 +349,40 @@ async function handleCommand(command) {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+  background: var(--ct-white);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* ========== 移动端响应式 ========== */
 @media (max-width: 768px) {
   .admin-layout {
-    border-radius: 0;
+    padding: 8px;
+    gap: 8px;
+  }
+  .admin-sidebar {
+    border-radius: 14px;
   }
   .admin-header {
     padding: 12px 14px;
+    border-radius: 12px;
   }
   .admin-header h2 {
     font-size: 16px;
   }
   .admin-content {
     padding: 12px;
+    border-radius: 12px;
   }
   .user-info {
     padding: 4px 6px;
   }
   .admin-name {
     display: none;
+  }
+  .sidebar-menu :deep(.el-menu-item) {
+    margin: 2px 6px;
+    justify-content: center;
   }
 }
 </style>

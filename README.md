@@ -722,6 +722,8 @@ A: 确认 WebSocket 连接正常。多实例部署时需将 `app.session.store` 
 ### v1.1.0（2026-09-22）
 
 **交互优化：**
+- 顶部导航未读徽章：「消息」显示私聊未读总数，「通知」显示个人通知未读数（好友申请、商品被购买等），红色背景数字，超过 99 显示 99+
+- 修复消息徽章不显示的 bug（App.vue 误用 chat.unread，store 中实际字段为 unreadTotal）
 - 帖子点赞改为 toggle 模式：同一用户对同一帖子只能点赞一次，再次点击取消点赞（PostLike 实体联合唯一约束，PostVO 新增 liked 字段）
 - 好友状态联动：已是好友时不再显示「加好友」，改为「删好友」；私聊窗口顶部同步好友状态
 - 私聊窗口点击对方头像可跳转其个人主页
@@ -748,6 +750,8 @@ A: 确认 WebSocket 连接正常。多实例部署时需将 `app.session.store` 
 **UI 统一：**
 - 全站默认头像背景色统一为广西大学深红渐变 linear-gradient(135deg, #941e23, #761317)
   （此前学生端 7 个页面/组件使用蓝绿渐变 #409eff→#67c23a，与整体风格不一致）
+- 管理员端侧边栏改为悬浮岛式（floating island）：圆角 20px、深红投影、上下留白、菜单项 pill 样式
+- 顶部导航「消息」「通知」添加红色未读数字徽章，30 秒轮询刷新，点击进入对应页面后自动清零
 
 **Bug 修复：**
 - 学生端 API getProfile 路径错误（/auth/profile → /auth/userinfo），导致 GET method not supported

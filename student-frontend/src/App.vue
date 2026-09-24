@@ -29,14 +29,16 @@
         <el-button text @click="$router.push('/posts')">
           <el-icon><ChatLineSquare /></el-icon> 校园论坛
         </el-button>
-        <el-badge :value="chat.unread" :hidden="!chat.unread" :max="99" class="nav-badge">
+        <el-badge :value="chat.unreadTotal" :hidden="!chat.unreadTotal" :max="99" class="nav-badge">
           <el-button text @click="$router.push('/messages')">
             <el-icon><Message /></el-icon> 消息
           </el-button>
         </el-badge>
-        <el-button text @click="$router.push('/notifications')">
-          <el-icon><Bell /></el-icon> 通知
-        </el-button>
+        <el-badge :value="notificationUnread" :hidden="!notificationUnread" :max="99" class="nav-badge">
+          <el-button text @click="$router.push('/notifications')">
+            <el-icon><Bell /></el-icon> 通知
+          </el-button>
+        </el-badge>
         <template v-if="userStore.isLoggedIn">
           <el-dropdown @command="handleCommand">
             <span class="user-info">
@@ -99,6 +101,7 @@
         </div>
         <div class="mobile-nav-item" @click="navigateTo('/notifications')">
           <el-icon><Bell /></el-icon> 通知
+          <el-badge v-if="notificationUnread" :value="notificationUnread" :max="99" class="mobile-badge" />
         </div>
         <el-divider />
         <template v-if="userStore.isLoggedIn">
@@ -109,7 +112,7 @@
           <el-divider />
           <div class="mobile-nav-item" v-if="!userStore.isAdmin" @click="navigateTo('/messages')">
             <el-icon><Message /></el-icon> 我的消息
-            <el-badge v-if="chat.unread" :value="chat.unread" :max="99" class="mobile-badge" />
+            <el-badge v-if="chat.unreadTotal" :value="chat.unreadTotal" :max="99" class="mobile-badge" />
           </div>
           <div class="mobile-nav-item" v-if="!userStore.isAdmin" @click="navigateTo('/friends')">
             <el-icon><UserFilled /></el-icon> 我的好友
@@ -192,7 +195,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { useChatStore } from '@/store/chat'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { logout as apiLogout } from '@/api'
+import { logout as apiLogout, getUserNotificationUnreadCount } from '@/api'
 import { useFocusMode } from '@/composables/useFocusMode'
 import { connect as connectChat, disconnect as disconnectChat } from '@/composables/useChatSocket'
 import { School } from '@element-plus/icons-vue'
@@ -203,6 +206,25 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const chat = useChatStore()
+
+// 通知未读数
+const notificationUnread = ref(0)
+let notificationPollTimer = null
+async function refreshNotificationUnread() {
+  if (!userStore.isLoggedIn || userStore.isAdmin) { notificationUnread.value = 0; return }
+  try {
+    const res = await getUserNotificationUnreadCount()
+    notificationUnread.value = Number(res?.data?.count) || 0
+  } catch { /* 后端不可用时保持原值 */ }
+}
+function startNotificationPoll() {
+  stopNotificationPoll()
+  refreshNotificationUnread()
+  notificationPollTimer = setInterval(refreshNotificationUnread, 30000)
+}
+function stopNotificationPoll() {
+  if (notificationPollTimer) { clearInterval(notificationPollTimer); notificationPollTimer = null }
+}
 
 const {
   focusMode,
@@ -271,6 +293,7 @@ onUnmounted(() => {
   removeAfterEach()
   clearInterval(loadingTimer)
   stopAutoLogout()
+  stopNotificationPoll()
 })
 
 onMounted(() => {
@@ -280,16 +303,22 @@ onMounted(() => {
   if (schoolMode.value && !focusMode.value) {
     forceEnterFocusMode()
   }
-  // 已登录则建立私聊长连接
-  if (userStore.isLoggedIn) connectChat()
+  // 已登录则建立私聊长连接 + 通知未读轮询
+  if (userStore.isLoggedIn) {
+    connectChat()
+    if (!userStore.isAdmin) startNotificationPoll()
+  }
 })
 
 // 登录 / 退出时同步维护私聊长连接
 watch(() => userStore.token, (token) => {
   if (token && !userStore.isAdmin) {
     connectChat()
+    startNotificationPoll()
   } else {
     disconnectChat()
+    stopNotificationPoll()
+    notificationUnread.value = 0
   }
 })
 
@@ -322,6 +351,8 @@ const handleCommand = async (command) => {
         })
         await apiLogout()
         disconnectChat()
+        stopNotificationPoll()
+        notificationUnread.value = 0
         userStore.logout()
         // 退出登录时同时退出专注模式
         if (focusMode.value) forceExitFocusMode()

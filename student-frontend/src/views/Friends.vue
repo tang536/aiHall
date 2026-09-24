@@ -49,6 +49,7 @@
               v-for="f in friends"
               :key="f.userId"
               :user="f"
+              :unread="unreadMap[f.userId] || 0"
               show-chat
               class="friend-item"
               @chat="startChat"
@@ -115,13 +116,14 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import UserCard from '@/components/UserCard.vue'
 import {
   searchUser, listFriends, friendRequests, sentFriendRequests,
-  sendFriendRequest, acceptFriend, rejectFriend, deleteFriend
+  sendFriendRequest, acceptFriend, rejectFriend, deleteFriend,
+  listConversations
 } from '@/api'
 import { resolveAvatarUrl } from '@/utils/community'
 
@@ -136,6 +138,28 @@ const loading = ref(false)
 const friends = ref([])
 const requests = ref([])
 const sent = ref([])
+const unreadMap = ref({})
+let unreadPollTimer = null
+
+async function loadUnreadCounts() {
+  try {
+    const res = await listConversations()
+    const map = {}
+    ;(res?.data || []).forEach((c) => {
+      const uid = c.peer?.userId
+      if (uid && c.unread) map[uid] = c.unread
+    })
+    unreadMap.value = map
+  } catch { /* 静默失败 */ }
+}
+function startUnreadPoll() {
+  stopUnreadPoll()
+  loadUnreadCounts()
+  unreadPollTimer = setInterval(loadUnreadCounts, 30000)
+}
+function stopUnreadPoll() {
+  if (unreadPollTimer) { clearInterval(unreadPollTimer); unreadPollTimer = null }
+}
 
 async function doSearch() {
   const kw = keyword.value.trim()
@@ -159,6 +183,7 @@ async function doSearch() {
 async function loadFriends() {
   const res = await listFriends()
   friends.value = res?.data || []
+  loadUnreadCounts()
 }
 
 async function loadAll() {
@@ -171,6 +196,7 @@ async function loadAll() {
   } finally {
     loading.value = false
   }
+  loadUnreadCounts()
 }
 
 async function addFriend(user) {

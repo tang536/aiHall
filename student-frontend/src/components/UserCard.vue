@@ -1,8 +1,10 @@
 <template>
   <div class="user-card" :class="{ compact }">
-    <el-avatar :size="compact ? 36 : 48" class="avatar clickable" :src="user?.avatar ? resolveAvatarUrl(user.avatar) : ''" @click="goProfile">
-      {{ (user?.displayName || '?').charAt(0) }}
-    </el-avatar>
+    <el-badge :value="unread" :hidden="!unread" :max="99" class="unread-badge">
+      <el-avatar :size="compact ? 36 : 48" class="avatar clickable" :src="user?.avatar ? resolveAvatarUrl(user.avatar) : ''" @click="goProfile">
+        {{ (user?.displayName || '?').charAt(0) }}
+      </el-avatar>
+    </el-badge>
     <div class="info">
       <div class="name-row">
         <span class="name clickable" @click="goProfile">{{ user?.displayName || '未知用户' }}</span>
@@ -46,7 +48,8 @@ const props = defineProps({
   user: { type: Object, default: () => ({}) },
   compact: { type: Boolean, default: false },
   showChat: { type: Boolean, default: false },
-  showAdd: { type: Boolean, default: false }
+  showAdd: { type: Boolean, default: false },
+  unread: { type: Number, default: 0 }
 })
 defineEmits(['chat', 'add', 'remove'])
 
@@ -76,6 +79,11 @@ function goProfile() {
   background: linear-gradient(135deg, #941e23, #761317);
   color: #fff;
   font-weight: 700;
+}
+
+.unread-badge :deep(.el-badge__content) {
+  border: none;
+  background: #e74c3c;
 }
 
 .clickable {

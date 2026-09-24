@@ -322,6 +322,14 @@ watch(() => userStore.token, (token) => {
   }
 })
 
+// 离开通知/消息页时立即刷新未读数（阅读后徽章即时减少）
+watch(() => route.path, (newPath, oldPath) => {
+  if (oldPath === '/notifications' || oldPath === '/messages' || oldPath === '/friends') {
+    refreshNotificationUnread()
+    chat.refreshUnread()
+  }
+})
+
 const handleCommand = async (command) => {
   switch (command) {
     case 'profile':

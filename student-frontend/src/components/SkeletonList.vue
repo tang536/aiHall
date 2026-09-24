@@ -32,7 +32,7 @@ defineProps({
 <style scoped>
 .skeleton-list { width: 100%; }
 .shimmer {
-  background: linear-gradient(90deg, #f0f2f5 25%, #e6e8eb 37%, #f0f2f5 63%);
+  background: linear-gradient(90deg, #f0ebe2 25%, #e5ddd0 37%, #f0ebe2 63%);
   background-size: 400% 100%;
   animation: sk-shimmer 1.4s ease infinite;
   border-radius: 6px;
@@ -42,10 +42,10 @@ defineProps({
   100% { background-position: -100% 0; }
 }
 .sk-card {
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--ct-line);
   border-radius: 10px;
   overflow: hidden;
-  background: #fff;
+  background: var(--ct-white);
 }
 .sk-cover { width: 100%; height: 150px; border-radius: 0; }
 .sk-body { padding: 12px; }
@@ -60,7 +60,7 @@ defineProps({
   display: flex;
   gap: 14px;
   padding: 14px 8px;
-  border-bottom: 1px solid #f2f4f7;
+  border-bottom: 1px solid var(--ct-line);
 }
 .sk-cell { height: 16px; }
 </style>

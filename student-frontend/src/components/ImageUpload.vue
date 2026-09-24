@@ -100,9 +100,9 @@ function removeAt(idx) {
   position: relative;
   width: 84px;
   height: 84px;
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--ct-line);
 }
 
 .thumb-img {
@@ -129,23 +129,23 @@ function removeAt(idx) {
 .upload-trigger {
   width: 84px;
   height: 84px;
-  border: 1px dashed #dcdfe6;
-  border-radius: 8px;
+  border: 1px dashed var(--ct-line);
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: #909399;
+  color: var(--ct-muted);
   font-size: 12px;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
-  background: #fafafa;
+  background: #faf7f2;
 }
 
 .upload-trigger:hover {
-  border-color: #409eff;
-  color: #409eff;
+  border-color: var(--ct-red);
+  color: var(--ct-red);
 }
 
 .upload-trigger.disabled {
@@ -156,6 +156,6 @@ function removeAt(idx) {
 .upload-hint {
   margin: 8px 0 0;
   font-size: 12px;
-  color: #909399;
+  color: var(--ct-muted);
 }
 </style>

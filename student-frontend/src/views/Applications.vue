@@ -160,7 +160,7 @@
             <pre style="white-space: pre-wrap; font-size: 12px; margin: 0">{{ currentApp.formData }}</pre>
           </el-descriptions-item>
           <el-descriptions-item v-if="currentApp.rejectReason" label="驳回原因" :span="2">
-            <span style="color: #f56c6c">{{ currentApp.rejectReason }}</span>
+            <span style="color: var(--ct-red)">{{ currentApp.rejectReason }}</span>
           </el-descriptions-item>
         </el-descriptions>
       </div>
@@ -186,10 +186,10 @@ const myApplications = ref([])
 const applyFormRef = ref()
 
 const services = [
-  { type: 'SCHOLARSHIP', title: '奖助学金', desc: '国家奖学金、励志奖学金、助学金等申请', icon: 'Trophy', gradient: 'linear-gradient(135deg, #f56c6c, #f78989)' },
-  { type: 'LEAVE', title: '请假申请', desc: '病假、事假、公假在线申请与审批', icon: 'Calendar', gradient: 'linear-gradient(135deg, #409eff, #66b1ff)' },
-  { type: 'CERTIFICATE', title: '证明开具', desc: '在读证明、成绩单、学籍证明等', icon: 'Document', gradient: 'linear-gradient(135deg, #67c23a, #85ce61)' },
-  { type: 'OTHER', title: '其他事项', desc: '其他校园事务申请', icon: 'MoreFilled', gradient: 'linear-gradient(135deg, #909399, #a6a9ad)' },
+  { type: 'SCHOLARSHIP', title: '奖助学金', desc: '国家奖学金、励志奖学金、助学金等申请', icon: 'Trophy', gradient: 'linear-gradient(135deg, #941e23, #761317)' },
+  { type: 'LEAVE', title: '请假申请', desc: '病假、事假、公假在线申请与审批', icon: 'Calendar', gradient: 'linear-gradient(135deg, #b8935a, #9a7a45)' },
+  { type: 'CERTIFICATE', title: '证明开具', desc: '在读证明、成绩单、学籍证明等', icon: 'Document', gradient: 'linear-gradient(135deg, #2e7d62, #1f5a44)' },
+  { type: 'OTHER', title: '其他事项', desc: '其他校园事务申请', icon: 'MoreFilled', gradient: 'linear-gradient(135deg, #6f6d68, #4a4845)' },
 ]
 
 const applyForm = reactive({
@@ -301,7 +301,7 @@ onMounted(() => loadMyApplications())
 }
 
 .page-header p {
-  color: #909399;
+  color: var(--ct-muted);
   font-size: 14px;
   margin: 0;
 }
@@ -313,12 +313,12 @@ onMounted(() => loadMyApplications())
 }
 
 .service-card {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--ct-white);
+  border-radius: 0;
   padding: 28px 20px;
   text-align: center;
   cursor: pointer;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--ct-line);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -328,7 +328,7 @@ onMounted(() => loadMyApplications())
 .service-icon {
   width: 72px;
   height: 72px;
-  border-radius: 18px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -343,7 +343,7 @@ onMounted(() => loadMyApplications())
 
 .service-card p {
   font-size: 13px;
-  color: #909399;
+  color: var(--ct-muted);
   margin: 0;
   flex: 1;
 }
@@ -355,11 +355,11 @@ onMounted(() => loadMyApplications())
 }
 
 .app-card {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--ct-white);
+  border-radius: 0;
   padding: 20px;
   cursor: pointer;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--ct-line);
 }
 
 .app-header {
@@ -384,7 +384,7 @@ onMounted(() => loadMyApplications())
 
 .app-meta span {
   font-size: 13px;
-  color: #606266;
+  color: #4a4845;
 }
 
 .reject-reason {

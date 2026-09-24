@@ -75,8 +75,12 @@
                 <span>参考来源：</span>
                 <span v-for="(s, i) in msg.sources" :key="i" class="source-tag">{{ s }}</span>
               </div>
-              <!-- 反馈按钮 -->
+              <!-- 反馈按钮 + 语音播放 -->
               <div v-if="msg.role === 'assistant' && !msg.loading" class="msg-actions">
+                <el-button text size="small" :class="{ active: speakingIndex === idx }" @click="toggleSpeak(msg, idx)">
+                  <el-icon><VideoPlay v-if="speakingIndex !== idx" /><VideoPause v-else /></el-icon>
+                  {{ speakingIndex === idx ? '停止' : '播放' }}
+                </el-button>
                 <el-button text size="small" :class="{ active: msg.feedback === 1 }" @click="sendFeedback(msg, 1)">
                   <el-icon><Top /></el-icon> 有用
                 </el-button>
@@ -100,15 +104,23 @@
         <div class="chat-input-area">
           <div class="input-wrapper">
             <el-input v-model="inputMessage" type="textarea" :rows="2"
-                      placeholder="输入你的问题，按 Enter 发送，Shift+Enter 换行..."
+                      :placeholder="isListening ? '正在聆听，请说话...' : '输入你的问题，按 Enter 发送，Shift+Enter 换行，或点击麦克风语音输入...'"
                       @keydown.enter.exact.prevent="sendMessage"
                       resize="none" />
             <div class="input-actions">
               <span class="input-hint">Enter 发送 · Shift+Enter 换行</span>
+              <el-button circle :class="{ 'mic-active': isListening }" :disabled="!speechSupported"
+                         :title="speechSupported ? (isListening ? '停止录音' : '语音输入') : '当前浏览器不支持语音识别'"
+                         @click="toggleListen">
+                <el-icon :size="18"><Microphone v-if="!isListening" /><VideoPlay v-else /></el-icon>
+              </el-button>
               <el-button type="primary" :loading="sending" :disabled="!inputMessage.trim()" @click="sendMessage">
                 <el-icon><Promotion /></el-icon> 发送
               </el-button>
             </div>
+          </div>
+          <div v-if="isListening" class="voice-tip">
+            <span class="voice-pulse"></span> 正在聆听，说话内容将自动填入输入框，再次点击麦克风结束
           </div>
         </div>
       </div>
@@ -117,11 +129,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { streamChat, getChatStatus, chatFeedback } from '@/api'
 import { useUserStore } from '@/store/user'
 import { ElMessage } from 'element-plus'
+import { Microphone, VideoPlay, VideoPause } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -133,6 +146,116 @@ const sending = ref(false)
 const sessionId = ref('')
 const aiStatus = ref({ ollamaAvailable: false, message: '' })
 const messagesContainer = ref(null)
+
+// ===== 语音识别（语音转文字）=====
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+const speechSupported = !!SpeechRecognition
+const isListening = ref(false)
+let recognition = null
+
+function initRecognition() {
+  if (!speechSupported) return
+  recognition = new SpeechRecognition()
+  recognition.lang = 'zh-CN'
+  recognition.continuous = true
+  recognition.interimResults = true
+  recognition.onresult = (event) => {
+    let transcript = ''
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript
+    }
+    if (transcript) {
+      inputMessage.value = inputMessage.value ? inputMessage.value + transcript : transcript
+    }
+  }
+  recognition.onerror = (event) => {
+    console.warn('语音识别错误:', event.error)
+    isListening.value = false
+    if (event.error === 'not-allowed') {
+      ElMessage.warning('请允许浏览器使用麦克风权限')
+    } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+      ElMessage.warning('语音识别出错：' + event.error)
+    }
+  }
+  recognition.onend = () => {
+    isListening.value = false
+  }
+}
+
+function toggleListen() {
+  if (!speechSupported) {
+    ElMessage.warning('当前浏览器不支持语音识别，请使用 Chrome 或 Edge 浏览器')
+    return
+  }
+  if (!recognition) initRecognition()
+  if (isListening.value) {
+    recognition.stop()
+    isListening.value = false
+  } else {
+    try {
+      recognition.start()
+      isListening.value = true
+    } catch (e) {
+      console.warn('启动语音识别失败:', e)
+    }
+  }
+}
+
+// ===== 语音合成（文字转语音）=====
+const speakingIndex = ref(-1)
+let currentUtterance = null
+
+function stripForSpeech(text) {
+  if (!text) return ''
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/^### .*$/gm, '')
+    .replace(/^## .*$/gm, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n+/g, '，')
+    .trim()
+}
+
+function toggleSpeak(msg, idx) {
+  // 如果正在播放同一条，则停止
+  if (speakingIndex.value === idx) {
+    stopSpeak()
+    return
+  }
+  // 停止之前的播放
+  stopSpeak()
+  const text = stripForSpeech(msg.content)
+  if (!text) {
+    ElMessage.warning('该消息没有可播放的内容')
+    return
+  }
+  if (!('speechSynthesis' in window)) {
+    ElMessage.warning('当前浏览器不支持语音播放')
+    return
+  }
+  currentUtterance = new SpeechSynthesisUtterance(text)
+  currentUtterance.lang = 'zh-CN'
+  currentUtterance.rate = 1.0
+  currentUtterance.pitch = 1.0
+  currentUtterance.onend = () => {
+    speakingIndex.value = -1
+    currentUtterance = null
+  }
+  currentUtterance.onerror = () => {
+    speakingIndex.value = -1
+    currentUtterance = null
+  }
+  speakingIndex.value = idx
+  window.speechSynthesis.speak(currentUtterance)
+}
+
+function stopSpeak() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+  }
+  speakingIndex.value = -1
+  currentUtterance = null
+}
 
 const quickQuestions = [
   '贫困认定需要什么材料？',
@@ -256,6 +379,7 @@ async function sendFeedback(msg, feedback) {
 }
 
 function newChat() {
+  stopSpeak()
   messages.value = []
   sessionId.value = ''
 }
@@ -665,6 +789,52 @@ onMounted(async () => {
 
 .input-actions :deep(.el-button--primary:hover) {
   background: linear-gradient(135deg, #a8282d, #8a181d);
+}
+
+/* 麦克风按钮 */
+.input-actions :deep(.el-button--default) {
+  margin: 0 4px;
+}
+.mic-active {
+  background: linear-gradient(135deg, #941e23, #761317) !important;
+  border-color: #941e23 !important;
+  color: #fff !important;
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(148, 30, 35, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(148, 30, 35, 0); }
+}
+
+/* 语音提示条 */
+.voice-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #f7e9e7;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #941e23;
+}
+.voice-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e74c3c;
+  animation: voicePulse 1s ease-in-out infinite;
+}
+@keyframes voicePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* 播放按钮激活态 */
+.msg-actions :deep(.el-button.active) {
+  color: #941e23;
+  background: #f7e9e7;
+  border-radius: 6px;
 }
 
 /* 移动端侧边栏切换按钮 */

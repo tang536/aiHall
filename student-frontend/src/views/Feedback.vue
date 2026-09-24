@@ -171,9 +171,9 @@ onMounted(loadMine)
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #ebeef5;
-  border-radius: 12px;
+  background: var(--ct-white);
+  border: 1px solid var(--ct-line);
+  border-radius: 0;
   padding: 20px;
 }
 
@@ -186,7 +186,7 @@ onMounted(loadMine)
 .card-title {
   margin: 0 0 16px;
   font-size: 16px;
-  color: #303133;
+  color: var(--ct-ink);
 }
 
 .fb-list {
@@ -198,10 +198,10 @@ onMounted(loadMine)
 }
 
 .fb-item {
-  border: 1px solid #ebeef5;
-  border-radius: 10px;
+  border: 1px solid var(--ct-line);
+  border-radius: 0;
   padding: 14px;
-  background: #fafbfc;
+  background: #faf7f2;
 }
 
 .fb-head {
@@ -213,16 +213,16 @@ onMounted(loadMine)
 
 .fb-type {
   font-size: 12px;
-  color: #409eff;
-  background: #ecf5ff;
-  border-radius: 4px;
+  color: var(--ct-red);
+  background: var(--ct-red-soft);
+  border-radius: 0;
   padding: 1px 7px;
 }
 
 .fb-title {
   font-weight: 600;
   font-size: 14px;
-  color: #303133;
+  color: var(--ct-ink);
   flex: 1;
   min-width: 0;
 }
@@ -230,7 +230,7 @@ onMounted(loadMine)
 .fb-content {
   margin: 8px 0 0;
   font-size: 13px;
-  color: #606266;
+  color: #4a4845;
   line-height: 1.75;
   white-space: pre-wrap;
 }
@@ -245,7 +245,7 @@ onMounted(loadMine)
 .fb-image {
   width: 84px;
   height: 84px;
-  border-radius: 6px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -255,15 +255,15 @@ onMounted(loadMine)
   justify-content: space-between;
   margin-top: 10px;
   font-size: 12px;
-  color: #c0c4cc;
+  color: #a8a49c;
 }
 
 .admin-reply {
   margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 8px;
-  background: #f0f9eb;
-  border-left: 3px solid #67c23a;
+  border-radius: 0;
+  background: #e8f0ec;
+  border-left: 3px solid var(--ct-green);
 }
 
 .admin-reply-head {
@@ -271,19 +271,19 @@ onMounted(loadMine)
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #67c23a;
+  color: var(--ct-green);
   font-weight: 600;
 }
 
 .reply-time {
-  color: #a8c99a;
+  color: #8fb3a3;
   font-weight: 400;
 }
 
 .admin-reply-text {
   margin: 6px 0 0;
   font-size: 13px;
-  color: #4d7c3a;
+  color: var(--ct-green);
   line-height: 1.7;
   white-space: pre-wrap;
 }
